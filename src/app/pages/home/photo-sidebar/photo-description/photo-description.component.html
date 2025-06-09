@@ -1,0 +1,10 @@
+<div class="description-wrapper">
+  <p
+    class="photo-description"
+    [class.clamped]="!showFull"
+    [innerText]="description || 'No description'"
+  ></p>
+  <button class="btn btn-sm btn-link" *ngIf="!!description && description.length > 0" (click)="toggleDescription()">
+    {{ showFull ? 'Hide description' : 'Show full description' }}
+  </button>
+</div>

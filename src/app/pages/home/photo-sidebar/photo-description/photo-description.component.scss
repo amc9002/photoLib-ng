@@ -1,0 +1,33 @@
+.description-wrapper {
+  margin-bottom: 10px;
+}
+
+.photo-description {
+  margin: 0;
+  line-height: 1.4;
+  overflow: hidden;
+
+  &.clamped {
+    display: -webkit-box;
+    display: -moz-box; /* Firefox прэфікс */
+    display: box;
+    -webkit-box-orient: vertical;
+    -moz-box-orient: vertical;
+    box-orient: vertical;
+
+    -webkit-line-clamp: 3;  /* Chrome, Safari, Opera */
+    line-clamp: 3;          /* стандартызаванае ўласцівасць */
+    /* Для сумяшчальнасці */
+    overflow: hidden;
+  }
+}
+
+button {
+  padding: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: underline;
+}

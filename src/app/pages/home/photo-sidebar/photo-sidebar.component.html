@@ -1,0 +1,6 @@
+<div class="sidebar">
+  <app-photo-description [description]="photo?.description?? null"></app-photo-description>
+  <app-photo-metadata [photo]="photo" (exifExtracted)="onExifExtracted($event)"></app-photo-metadata>
+  <app-photo-actions></app-photo-actions>
+</div>
+

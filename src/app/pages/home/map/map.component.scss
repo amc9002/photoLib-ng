@@ -1,0 +1,14 @@
+.leaflet-container {
+  grid-area: map;
+  background: #eef6ff;
+  border: 1px solid #ddd;
+  padding: 10px;
+   width: 100%;
+  height: 100%;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  height: 300px;
+}

@@ -1,0 +1,9 @@
+<div class="gallery">
+  <img
+    *ngFor="let photo of photos"
+    [src]="photo.url"
+    [alt]="photo.description"
+    class="thumbnail"
+    (click)="selectPhoto(photo)"
+  />
+</div>

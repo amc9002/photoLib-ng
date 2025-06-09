@@ -1,0 +1,22 @@
+<div class="exif-preview">
+  <p *ngIf="exif?.DateTimeOriginal">Date: {{ exif.DateTimeOriginal }}</p>
+  <p *ngIf="exif?.ImageWidth && exif?.ImageHeight">
+    Size: {{ exif.ImageWidth }} × {{ exif.ImageHeight }}
+  </p>
+  <p *ngIf="exif?.Orientation">Orientation: {{ exif.Orientation }}</p>
+
+  <button class="btn btn-outline-secondary btn-sm" (click)="toggleModal()">Show full metadata</button>
+</div>
+
+<!-- Мадальнае акно -->
+<div class="modal" [class.show]="modalOpen" (click)="toggleModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h5>Full metadata</h5>
+    <div class="exif-full">
+      <div *ngFor="let key of exifKeys">
+        <strong>{{key}}:</strong> {{exif[key]}}
+      </div>
+    </div>
+    <button class="btn btn-primary mt-3" (click)="toggleModal()">Close</button>
+  </div>
+</div>

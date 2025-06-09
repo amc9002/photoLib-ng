@@ -1,0 +1,22 @@
+<div class="photo-wrapper">
+  <img
+    class="selected-photo"
+    [src]="photo?.url"
+    (click)="openFullSizeModal()"
+    alt="Selected picture"
+  />
+</div>
+
+<!-- Мадальнае акно -->
+<div class="photo-modal" [class.show]="fullSizeOpen" (click)="closeFullSizeModal()">
+  <button class="close-btn" (click)="closeFullSizeModal(); $event.stopPropagation()">×</button>
+  <div class="image-container" (click)="$event.stopPropagation()">
+    <img
+      class="full-size-photo"
+      [src]="photo?.url"
+      (click)="$event.stopPropagation()"
+      alt="Full size"
+    />
+  </div>
+  
+</div>

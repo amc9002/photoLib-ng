@@ -1,0 +1,19 @@
+<div class="layout">
+  <div style="grid-area: gallery;">
+    <app-gallery (photoSelected)="onPhotoSelected($event)"></app-gallery>
+  </div>
+
+  <div style="grid-area: photo;">
+    <app-photo-viewer [photo]="selectedImage"></app-photo-viewer>
+  </div>
+
+  <div style="grid-area: sidebar;">
+    <app-photo-sidebar [photo]="selectedImage" (exifExtracted)="onExifExtracted($event)">
+    </app-photo-sidebar>
+  </div>
+
+  <div style="grid-area: map;">
+    <app-map [exif]="exifData"></app-map>
+  </div>
+
+</div>
