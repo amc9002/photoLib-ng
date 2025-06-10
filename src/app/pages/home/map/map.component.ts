@@ -42,6 +42,13 @@ export class MapComponent implements OnChanges, AfterViewInit {
 
     if (!this.hasCoordinates()) {
       console.warn('EXIF does not contain valid GPS coordinates');
+
+      if (this.map) {
+        this.map.remove();
+        this.map = null;
+        this.marker = null;
+      }
+
       return;
     }
 
@@ -49,16 +56,21 @@ export class MapComponent implements OnChanges, AfterViewInit {
       if (this.map) {
         this.updateMap();
       } else {
-        this.initMap();
+        // Чакаем, пакуль DOM цалкам гатовы (ViewChild)
+        setTimeout(() => {
+          this.initMap();
+        }, 50);
       }
     }
   }
 
   ngAfterViewInit(): void {
-    this.mapInitialized = true;
-    if (this.hasCoordinates()) {
-      this.initMap();
-    }
+    setTimeout(() => {
+      if (this.hasCoordinates()) {
+        this.initMap();
+      }
+      this.mapInitialized = true;
+    }, 50); // або 50 мс, калі трэба
   }
 
   public hasCoordinates(): boolean {
@@ -94,13 +106,21 @@ export class MapComponent implements OnChanges, AfterViewInit {
 
     this.marker = L.marker(coords).addTo(this.map).bindPopup('Photo location');
     this.marker.openPopup();
+
+    setTimeout(() => {
+      this.map!.invalidateSize();
+    }, 0);
   }
 
   private updateMap(): void {
     if (this.map && this.marker && this.hasCoordinates()) {
       const coords: [number, number] = [this.latitude!, this.longitude!];
       this.marker.setLatLng(coords);
-      this.map.setView(coords, 13);
+      this.map.setView(coords, this.map.getZoom());
+
+      setTimeout(() => {
+        this.map!.invalidateSize();
+      }, 0);
     }
   }
 }

@@ -1,12 +1,12 @@
 .layout {
   display: grid;
   grid-template-rows: auto 1fr;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1.8fr 1fr 1fr;
   grid-template-areas:
     "gallery gallery gallery"
     "photo   sidebar    map";
   gap: 16px;
   height: 100vh;
-  padding: 10px;
+  padding: 30px;
   box-sizing: border-box;
 }
