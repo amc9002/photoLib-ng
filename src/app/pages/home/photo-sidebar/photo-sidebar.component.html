@@ -7,4 +7,9 @@
     (uploadPhoto)="onUploadPhoto()"
     (deletePhoto)="onDeletePhoto()">
   </app-photo-actions>
+  <app-confirm-dialog
+    *ngIf="showConfirmDialog"
+    (confirm)="onConfirmDelete()"
+    (cancel)="onCancelDelete()">
+  </app-confirm-dialog>
 </div>

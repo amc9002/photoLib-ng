@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GalleryComponent } from './gallery/gallery.component';
 import { PhotoViewerComponent } from './photo-viewer/photo-viewer.component';
@@ -9,8 +9,8 @@ import { Photo } from '../../models/photo';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, 
-    GalleryComponent, 
+  imports: [CommonModule,
+    GalleryComponent,
     PhotoViewerComponent,
     PhotoSidebarComponent,
     MapComponent],
@@ -20,19 +20,27 @@ import { Photo } from '../../models/photo';
 })
 
 export class HomeComponent {
-  selectedImage: Photo | null = null;
-
-  onPhotoSelected(photo: Photo) {
-    this.selectedImage = photo;
-  }
+  @Input() selectedPhoto: Photo | null = null;
+  @Output() photoSelected = new EventEmitter<Photo>();
+  @Output() deletePhoto = new EventEmitter();
 
   exifData: any = {
-  GPSLatitude: 52.2297,
-  GPSLongitude: 21.0122
-};
+    GPSLatitude: 52.2297,
+    GPSLongitude: 21.0122
+  };
 
-onExifExtracted(exif: any) {
-  console.log('EXIF received in HomeComponent:', exif);
-  this.exifData = exif;
-}
+  onPhotoSelected(photo: Photo) {
+    this.selectedPhoto = photo;
+    this.photoSelected.emit(photo);
+  }
+
+  onExifExtracted(exif: any) {
+    console.log('EXIF received in HomeComponent:', exif);
+    this.exifData = exif;
+  }
+
+  onDeletePhoto() {
+    console.log("The photo will be deleted");
+    this.deletePhoto.emit();
+  }
 }

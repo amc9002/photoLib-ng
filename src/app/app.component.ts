@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { HomeComponent } from './pages/home/home.component'; // ✅ Імпартуй кампанент
+import { HomeComponent } from './pages/home/home.component'; 
+import { PhotoService } from './services/photo.service';
+import { Photo } from './models/photo';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +12,20 @@ import { HomeComponent } from './pages/home/home.component'; // ✅ Імпарт
 })
 export class AppComponent {
   title = 'photolib-ng';
+
+  selectedPhoto: Photo | null = null; 
+
+  constructor(private photoService: PhotoService){}
+
+  onDeletePhoto() {
+    console.log("Deleting of photo", this.selectedPhoto);
+    if(this.selectedPhoto) {
+      this.photoService.deletePhoto(this.selectedPhoto);
+      this.selectedPhoto = null;
+    }
+  }
+
+  onPhotoSelected(photo: Photo){
+    this.selectedPhoto = photo;
+  }
 }

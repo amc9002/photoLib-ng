@@ -4,12 +4,15 @@
   </div>
 
   <div style="grid-area: photo;">
-    <app-photo-viewer [photo]="selectedImage"></app-photo-viewer>
+    <app-photo-viewer [photo]="selectedPhoto"></app-photo-viewer>
   </div>
 
   <div style="grid-area: sidebar;">
-    <app-photo-sidebar [photo]="selectedImage" (exifExtracted)="onExifExtracted($event)">
-    </app-photo-sidebar>
+    <app-photo-sidebar 
+    [photo]="selectedPhoto" 
+    (exifExtracted)="onExifExtracted($event)"
+    (deletePhoto)="onDeletePhoto()"
+    ></app-photo-sidebar>
   </div>
 
   <div style="grid-area: map;">

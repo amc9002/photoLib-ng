@@ -1,9 +1,7 @@
 <div class="gallery">
-  <img
-    *ngFor="let photo of photos"
-    [src]="photo.url"
-    [alt]="photo.description"
-    class="thumbnail"
+  <img class="thumbnail" *ngFor="let photo of photos$ | async"
+    [src]="photo.url" [alt]="photo.description" 
+    [class.selected]="photo.url === selectedPhotoUrl"
     (click)="selectPhoto(photo)"
   />
 </div>

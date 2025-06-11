@@ -9,10 +9,15 @@
   height: 80px;
   margin-right: 8px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: transform 0.2s;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
     transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
   }
+}
+
+.thumbnail.selected {
+  outline: 3px solid #007bff;
 }

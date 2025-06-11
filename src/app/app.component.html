@@ -1,1 +1,5 @@
-<app-home></app-home>
+<app-home
+    [selectedPhoto]="selectedPhoto"
+    (deletePhoto)="onDeletePhoto()"
+    (photoSelected)="onPhotoSelected($event)">
+</app-home>

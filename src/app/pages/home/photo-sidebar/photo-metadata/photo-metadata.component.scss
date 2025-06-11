@@ -38,3 +38,14 @@
   font-family: monospace;
   font-size: 13px;
 }
+
+.btn {
+  background-color: lightskyblue;
+  border-radius: 8px;
+}
+
+.btn:hover {
+  background-color: #5da1e4;
+  transition: 500ms;
+  transition-duration: 300ms;
+}
