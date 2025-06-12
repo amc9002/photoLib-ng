@@ -3,19 +3,22 @@
     <app-gallery (photoSelected)="onPhotoSelected($event)"></app-gallery>
   </div>
 
-  <div style="grid-area: photo;">
+  <div style="grid-area: photo;" class="photo">
     <app-photo-viewer [photo]="selectedPhoto"></app-photo-viewer>
   </div>
 
-  <div style="grid-area: sidebar;">
+  <div style="grid-area: sidebar;" class="sidebar">
     <app-photo-sidebar 
-    [photo]="selectedPhoto" 
-    (exifExtracted)="onExifExtracted($event)"
-    (deletePhoto)="onDeletePhoto()"
-    ></app-photo-sidebar>
+      [photo]="selectedPhoto" 
+      (exifExtracted)="onExifExtracted($event)"
+      (deletePhoto)="onDeletePhoto()"
+      (uploadPhoto)="onUploadPhoto()"
+      (editDescription)="onEditDescription()"
+      >
+  </app-photo-sidebar>
   </div>
 
-  <div style="grid-area: map;">
+  <div style="grid-area: map;" class="map">
     <app-map [exif]="exifData"></app-map>
   </div>
 

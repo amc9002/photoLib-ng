@@ -4,8 +4,6 @@ import { Photo } from '../../../models/photo';
 import { PhotoDescriptionComponent } from './photo-description/photo-description.component';
 import { PhotoMetadataComponent } from './photo-metadata/photo-metadata.component';
 import { PhotoActionsComponent } from './photo-actions/photo-actions.component';
-import { PhotoTitleComponent } from "./photo-title/photo-title.component";
-import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-photo-sidebar',
@@ -15,8 +13,6 @@ import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-d
     PhotoDescriptionComponent,
     PhotoMetadataComponent,
     PhotoActionsComponent,
-    PhotoTitleComponent,
-    ConfirmDialogComponent
   ],
   templateUrl: './photo-sidebar.component.html',
   styleUrls: ['./photo-sidebar.component.scss']
@@ -25,31 +21,37 @@ export class PhotoSidebarComponent {
   @Input() photo: Photo | null = null;
   @Output() exifExtracted = new EventEmitter<any>();
   @Output() deletePhoto = new EventEmitter<void>();
+  @Output() editDescription = new EventEmitter<void>();
+  @Output() uploadPhoto = new EventEmitter<Photo>();
 
-  showConfirmDialog = false;
+  isEditingDescription = false;
 
   onExifExtracted(exif: any) {
     this.exifExtracted.emit(exif);
   }
 
   onEditDescription() {
-    console.log('Націснута: Рэдагаваць апісаньне');
+    this.isEditingDescription = true;
   }
+
+  onDescriptionSaved(newDescription: string) {
+    if (this.photo) {
+      this.photo.description = newDescription;
+    }
+    this.isEditingDescription = false;
+  }
+
+  onCancelEditing() {
+  this.isEditingDescription = false;
+}
 
   onUploadPhoto() {
     console.log('Націснута: Загрузіць фота');
+    this.uploadPhoto.emit();
   }
 
   onDeletePhoto() {
-    this.showConfirmDialog = true;
-  }
-
-  onConfirmDelete() {
+    console.log("Націснута: выдаліць фота");
     this.deletePhoto.emit();
-    this.showConfirmDialog = false;
-  }
-
-  onCancelDelete() {
-    this.showConfirmDialog = false;
   }
 }

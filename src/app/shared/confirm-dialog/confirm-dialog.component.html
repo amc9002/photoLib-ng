@@ -1,7 +1,9 @@
-<div class="dialog-backdrop">
-    <div class="dialog">
-        <p>Are you sure?</p>
-        <button (click)="onConfirm()">Delete</button>
-        <button (click)="onCancel()">Cancel</button>
+<div *ngIf="dialogService.isVisible" class="confirm-dialog-overlay">
+    <div class="confirm-dialog-box">
+        <p>{{ dialogService.message }}</p>
+        <div class="buttons">
+            <button (click)="dialogService.confirm()">Confirm</button>
+            <button (click)="dialogService.cancel()">Cancel</button>
+        </div>
     </div>
 </div>

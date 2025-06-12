@@ -1,5 +1,8 @@
 <app-home
     [selectedPhoto]="selectedPhoto"
-    (deletePhoto)="onDeletePhoto()"
-    (photoSelected)="onPhotoSelected($event)">
+    (photoSelected)="onPhotoSelected($event)"
+    (editDescription)="onEditDescription()"
+    (uploadPhoto)="onUploadPhoto()"
+    (deletePhoto)="onDeletePhoto()" >
 </app-home>
+<app-confirm-dialog></app-confirm-dialog>

@@ -22,7 +22,9 @@ import { Photo } from '../../models/photo';
 export class HomeComponent {
   @Input() selectedPhoto: Photo | null = null;
   @Output() photoSelected = new EventEmitter<Photo>();
-  @Output() deletePhoto = new EventEmitter();
+  @Output() editDescription = new EventEmitter<void>();
+  @Output() uploadPhoto = new EventEmitter<void>();
+  @Output() deletePhoto = new EventEmitter<void>();
 
   exifData: any = {
     GPSLatitude: 52.2297,
@@ -30,13 +32,22 @@ export class HomeComponent {
   };
 
   onPhotoSelected(photo: Photo) {
-    this.selectedPhoto = photo;
     this.photoSelected.emit(photo);
   }
 
   onExifExtracted(exif: any) {
     console.log('EXIF received in HomeComponent:', exif);
     this.exifData = exif;
+  }
+
+  onEditDescription() {
+    console.log("The description will be edited");
+    this.editDescription.emit();
+  }
+
+  onUploadPhoto() {
+    console.log("The new photo will be uploaded");
+    this.uploadPhoto.emit();
   }
 
   onDeletePhoto() {

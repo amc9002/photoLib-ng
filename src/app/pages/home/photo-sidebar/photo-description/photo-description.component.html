@@ -1,10 +1,25 @@
 <div class="description-wrapper">
-  <p
-    class="photo-description"
-    [class.clamped]="!showFull"
-    [innerText]="description || 'No description'"
-  ></p>
-  <button class="btn btn-sm btn-link" *ngIf="!!description && description.length > 0" (click)="toggleDescription()">
-    {{ showFull ? 'Hide description' : 'Show full description' }}
-  </button>
+  <!-- Калі НЕ рэдагаванне -->
+  <ng-container *ngIf="!isEditing; else editMode">
+    <p *ngIf="description !== null" #descRef class="photo-description" [class.clamped]="!showFull">
+      {{ description && description.trim().length > 0 ? description : 'No description' }}
+    </p>
+
+    <div class="description-actions d-flex gap-2 mt-2" *ngIf="description && description.length > 0">
+      <button *ngIf="isClamped" class="btn btn-sm button-link" (click)="toggleDescription()">
+        {{ showFull ? 'Hide description' : 'Show full description' }}
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- Рэжым рэдагавання -->
+  <ng-template #editMode>
+    <textarea [(ngModel)]="editedDescription" class="form-control" rows="4"
+      placeholder="Enter description..."></textarea>
+
+    <div class="edit-actions">
+      <button class="action-like-button save" (click)="save()">💾 Save</button>
+      <button class="action-like-button cancel" (click)="cancel()">Cancel</button>
+    </div>
+  </ng-template>
 </div>

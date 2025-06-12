@@ -1,0 +1,10 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* важна! */
+  overflow-y: auto;
+}
+
+.actions-wrapper {
+    margin-top: auto;
+}

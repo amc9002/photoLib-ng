@@ -10,3 +10,10 @@
   padding: 30px;
   box-sizing: border-box;
 }
+
+.photo, .sidebar, .map {
+  overflow-y: auto;
+  max-height: 100%;
+  box-sizing: border-box;
+}
+

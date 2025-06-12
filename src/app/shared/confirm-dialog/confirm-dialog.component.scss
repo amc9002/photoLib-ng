@@ -1,4 +1,4 @@
-.dialog-backdrop {
+.confirm-dialog-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0,0,0,0.5);
@@ -7,7 +7,7 @@
   align-items: center;
 }
 
-.dialog {
+.confirm-dialog-box {
   background: white;
   padding: 1rem 2rem;
   border-radius: 5px;

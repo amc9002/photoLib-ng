@@ -1,15 +1,12 @@
 <div class="sidebar">
-  <app-photo-title></app-photo-title>
-  <app-photo-description [description]="photo?.description?? null"></app-photo-description>
+  <app-photo-description [description]="photo?.description?? null" [editingFromOutside]="isEditingDescription"
+    (descriptionSaved)="onDescriptionSaved($event)" (editingCancelled)="onCancelEditing()">
+  </app-photo-description>
   <app-photo-metadata [photo]="photo" (exifExtracted)="onExifExtracted($event)"></app-photo-metadata>
-  <app-photo-actions 
-    (editDescription)="onEditDescription()" 
-    (uploadPhoto)="onUploadPhoto()"
-    (deletePhoto)="onDeletePhoto()">
-  </app-photo-actions>
-  <app-confirm-dialog
-    *ngIf="showConfirmDialog"
-    (confirm)="onConfirmDelete()"
-    (cancel)="onCancelDelete()">
-  </app-confirm-dialog>
+  <div class="actions-wrapper">
+    <app-photo-actions (editDescription)="onEditDescription()" (uploadPhoto)="onUploadPhoto()"
+      (deletePhoto)="onDeletePhoto()">
+    </app-photo-actions>
+  </div>
+
 </div>
