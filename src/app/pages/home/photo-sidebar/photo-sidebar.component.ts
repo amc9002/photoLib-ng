@@ -22,7 +22,7 @@ export class PhotoSidebarComponent {
   @Output() exifExtracted = new EventEmitter<any>();
   @Output() deletePhoto = new EventEmitter<void>();
   @Output() editDescription = new EventEmitter<void>();
-  @Output() uploadPhoto = new EventEmitter<Photo>();
+  @Output() uploadPhoto = new EventEmitter<File>();
 
   isEditingDescription = false;
 
@@ -42,13 +42,18 @@ export class PhotoSidebarComponent {
   }
 
   onCancelEditing() {
-  this.isEditingDescription = false;
-}
-
-  onUploadPhoto() {
-    console.log('Націснута: Загрузіць фота');
-    this.uploadPhoto.emit();
+    this.isEditingDescription = false;
   }
+
+  onUploadPhoto(file: File) {
+    console.log('Файл абраны', file);
+    this.uploadPhoto.emit(file);
+    // const newPhoto: Photo = {
+    //   id: Date.now(),
+    //   url: URL.createObjectURL(file),
+    //   description: 'New photo'
+  }
+
 
   onDeletePhoto() {
     console.log("Націснута: выдаліць фота");

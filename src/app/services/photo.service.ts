@@ -19,6 +19,18 @@ export class PhotoService {
     return this.photos;
   }
 
+  addPhoto(file: File): Photo {
+  const newId = this.photos.length > 0 ? Math.max(...this.photos.map(p => p.id)) + 1 : 1;
+  const newPhoto: Photo = {
+    id: newId,
+    url: URL.createObjectURL(file), // паказ у браўзэры
+    description: 'Новае фота',
+  };
+  this.photos.push(newPhoto);
+  this.photosSubject.next([...this.photos]); // абнаўляем stream
+  return newPhoto;
+}
+
   deletePhoto(photoToDelete: Photo): void {
     console.log("Current photos:", this.photos.map(p => p.id));
     console.log("Looking for", photoToDelete.id);

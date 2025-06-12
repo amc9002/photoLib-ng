@@ -30,8 +30,8 @@ export class AppComponent {
     console.log("Edit description dialog called");
   }
 
-  onUploadPhoto(){
-    console.log("Uploading of photo");
+  onUploadPhoto(file: File){
+    this.photoService.addPhoto(file);
   }
 
   onDeletePhoto() {

@@ -4,7 +4,7 @@
   </app-photo-description>
   <app-photo-metadata [photo]="photo" (exifExtracted)="onExifExtracted($event)"></app-photo-metadata>
   <div class="actions-wrapper">
-    <app-photo-actions (editDescription)="onEditDescription()" (uploadPhoto)="onUploadPhoto()"
+    <app-photo-actions (editDescription)="onEditDescription()" (uploadPhoto)="onUploadPhoto($event)"
       (deletePhoto)="onDeletePhoto()">
     </app-photo-actions>
   </div>

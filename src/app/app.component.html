@@ -2,7 +2,7 @@
     [selectedPhoto]="selectedPhoto"
     (photoSelected)="onPhotoSelected($event)"
     (editDescription)="onEditDescription()"
-    (uploadPhoto)="onUploadPhoto()"
+    (uploadPhoto)="onUploadPhoto($event)"
     (deletePhoto)="onDeletePhoto()" >
 </app-home>
 <app-confirm-dialog></app-confirm-dialog>

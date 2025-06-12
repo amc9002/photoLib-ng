@@ -2,7 +2,7 @@ export interface Photo {
   id: number;
   url: string;
   description: string;
-   exif?: {
+  exif?: {
     camera: string;
     date: string;
     size: string;

@@ -23,7 +23,7 @@ export class HomeComponent {
   @Input() selectedPhoto: Photo | null = null;
   @Output() photoSelected = new EventEmitter<Photo>();
   @Output() editDescription = new EventEmitter<void>();
-  @Output() uploadPhoto = new EventEmitter<void>();
+  @Output() uploadPhoto = new EventEmitter<File>();
   @Output() deletePhoto = new EventEmitter<void>();
 
   exifData: any = {
@@ -45,9 +45,9 @@ export class HomeComponent {
     this.editDescription.emit();
   }
 
-  onUploadPhoto() {
+  onUploadPhoto(file: File) {
     console.log("The new photo will be uploaded");
-    this.uploadPhoto.emit();
+    this.uploadPhoto.emit(file);
   }
 
   onDeletePhoto() {
