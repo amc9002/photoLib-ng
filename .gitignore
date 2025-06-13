@@ -1,0 +1,19 @@
+# === .NET / Visual Studio ===
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.dll
+*.exe
+*.pdb
+secrets.json
+
+# === Angular ===
+node_modules/
+dist/
+.angular/
+.env
+package-lock.json
+npm-debug.log
+yarn-error.log
