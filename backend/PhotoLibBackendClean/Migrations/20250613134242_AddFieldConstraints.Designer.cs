@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PhotoLibBackendClean.Models;
 
@@ -10,9 +11,11 @@ using PhotoLibBackendClean.Models;
 namespace PhotoLibBackendClean.Migrations
 {
     [DbContext(typeof(PhotoContext))]
-    partial class PhotoContextModelSnapshot : ModelSnapshot
+    [Migration("20250613134242_AddFieldConstraints")]
+    partial class AddFieldConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +42,12 @@ namespace PhotoLibBackendClean.Migrations
                     b.Property<byte[]>("ImageData")
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -51,24 +60,6 @@ namespace PhotoLibBackendClean.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Photos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Гэта тэставае апісанне",
-                            ExifData = "EXIF: ISO 100, f/2.8",
-                            Title = "Тэставае фота",
-                            Url = "https://example.com/photo1.jpg"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Апісанне другога фота",
-                            ExifData = "EXIF: ISO 200, f/5.6",
-                            Title = "Другое фота",
-                            Url = "https://example.com/photo2.jpg"
-                        });
                 });
 #pragma warning restore 612, 618
         }

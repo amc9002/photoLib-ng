@@ -1,13 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace PhotoLibBackendClean.Models
 {
     public class Photo
     {
         public int Id { get; set; }
-        public string Title { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string? Title { get; set; }
         public byte[]? ImageData { get; set; } = default!;
+        [MaxLength(300)]
         public string? Description { get; set; } = string.Empty;
         public string? ExifData { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
+        [MaxLength(500)]
+        public string? Url { get; set; }
     }
 }

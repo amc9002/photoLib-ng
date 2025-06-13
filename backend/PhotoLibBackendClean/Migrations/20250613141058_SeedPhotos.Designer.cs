@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PhotoLibBackendClean.Models;
 
@@ -10,9 +11,11 @@ using PhotoLibBackendClean.Models;
 namespace PhotoLibBackendClean.Migrations
 {
     [DbContext(typeof(PhotoContext))]
-    partial class PhotoContextModelSnapshot : ModelSnapshot
+    [Migration("20250613141058_SeedPhotos")]
+    partial class SeedPhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +42,12 @@ namespace PhotoLibBackendClean.Migrations
                     b.Property<byte[]>("ImageData")
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -58,6 +67,8 @@ namespace PhotoLibBackendClean.Migrations
                             Id = 1,
                             Description = "Гэта тэставае апісанне",
                             ExifData = "EXIF: ISO 100, f/2.8",
+                            Latitude = 53.899999999999999,
+                            Longitude = 27.566700000000001,
                             Title = "Тэставае фота",
                             Url = "https://example.com/photo1.jpg"
                         },
@@ -66,6 +77,8 @@ namespace PhotoLibBackendClean.Migrations
                             Id = 2,
                             Description = "Апісанне другога фота",
                             ExifData = "EXIF: ISO 200, f/5.6",
+                            Latitude = 52.0,
+                            Longitude = 21.0,
                             Title = "Другое фота",
                             Url = "https://example.com/photo2.jpg"
                         });
