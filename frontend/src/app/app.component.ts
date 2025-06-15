@@ -4,23 +4,41 @@ import { PhotoService } from './services/photo.service';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { ConfirmDialogService } from './shared/confirm-dialog/confirm-dialog.service';
 import { Photo } from './models/photo';
+import { CommonModule } from '@angular/common';
+import { LoadingService } from './services/loading.service';
+import { Observable } from 'rxjs';
+import { SpinnerComponent } from './shared/spinner/spinner.component';
 
 @Component({
   selector: 'app-root',
   standalone: true, // ✅ standalone кампанент
-  imports: [HomeComponent, ConfirmDialogComponent],
+  imports: [ 
+    HomeComponent,
+    SpinnerComponent, 
+    ConfirmDialogComponent, 
+    CommonModule ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   title = 'photolib-ng';
+  loading$: Observable<boolean>;
+  photos$!: Observable<Photo[]>;
+
+  photos: Photo[] = [];
 
   selectedPhoto: Photo | null = null;
 
   constructor(
+    private loadingService: LoadingService,
     private confirmDialogService: ConfirmDialogService,
     private photoService: PhotoService
-  ) { }
+  ) {
+    this.loading$ = this.loadingService.loading$;
+    this.photoService.photos$.subscribe(p => {
+      this.photos = p ?? [];
+    });
+   }
 
   onPhotoSelected(photo: Photo) {
     this.selectedPhoto = photo;

@@ -1,7 +1,11 @@
 <div class="gallery">
-  <img class="thumbnail" *ngFor="let photo of photos$ | async"
-    [src]="photo.url" [alt]="photo.description" 
+  <img 
+    class="thumbnail" 
+    *ngFor="let photo of photos"
+    [src]="photo.url" 
+    [alt]="photo.description" 
     [class.selected]="photo.url === selectedPhotoUrl"
+    [class.mock-photo]="photo.source === 'mock'"
     (click)="selectPhoto(photo)"
   />
 </div>

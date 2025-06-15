@@ -1,6 +1,8 @@
 <div class="layout">
   <div style="grid-area: gallery;">
-    <app-gallery (photoSelected)="onPhotoSelected($event)"></app-gallery>
+    <app-gallery 
+    [photos]="photos" 
+    (photoSelected)="onPhotoSelected($event)"></app-gallery>
   </div>
 
   <div style="grid-area: photo;" class="photo">

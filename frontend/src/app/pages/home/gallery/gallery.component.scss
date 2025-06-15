@@ -12,6 +12,25 @@
   border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 
+.thumbnail.mock-photo {
+  border: 2px dashed red;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+  opacity: 0.9;
+  position: relative;
+}
+
+.thumbnail.mock-photo::after {
+  content: "mock";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 10px;
+  background: red;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)

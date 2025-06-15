@@ -1,6 +1,8 @@
+import { SafeUrl } from "@angular/platform-browser";
+
 export interface Photo {
   id: number;
-  url: string;
+  url: string | SafeUrl;
   description: string;
   exif?: {
     camera: string;
@@ -14,4 +16,5 @@ export interface Photo {
     longitude?: number;
     [key: string]: any; // для дадатковых палёў
   };
+  source?: 'backend' | 'mock';
 }

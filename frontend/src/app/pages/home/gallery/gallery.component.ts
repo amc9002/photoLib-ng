@@ -1,40 +1,25 @@
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule, NgFor } from '@angular/common';
 import { Photo } from '../../../models/photo';
-import { PhotoService } from '../../../services/photo.service';
-import { Observable, Subscription } from 'rxjs';
+import { SafeUrl } from '@angular/platform-browser';
+
+
+type PhotoWithUrl = Photo & { url: SafeUrl };
 
 @Component({
   selector: 'app-gallery',
+  standalone: true,
   imports: [CommonModule, NgFor],
   templateUrl: './gallery.component.html',
-  styleUrl: './gallery.component.scss'
+  styleUrls: ['./gallery.component.scss']
 })
-export class GalleryComponent implements OnInit, OnDestroy{
-  photos: Photo[] = [];
-  private subscription!: Subscription;
+export class GalleryComponent {
+  @Input() photos: PhotoWithUrl[] = [];
+  @Output() photoSelected = new EventEmitter<PhotoWithUrl>();
 
-  @Output() photoSelected = new EventEmitter<Photo>();
+  selectedPhotoUrl?: SafeUrl;
 
-  photos$!: Observable<Photo[]>;
-
-  constructor(private photoService: PhotoService) {
-    this.photos$ = this.photoService.photos$;
-  }
-
-  ngOnInit() {
-    this.subscription = this.photoService.photos$.subscribe(photos => {
-      this.photos = photos;
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
-  selectedPhotoUrl?: string;
-
-  selectPhoto(photo: Photo) {
+  selectPhoto(photo: PhotoWithUrl) {
     this.selectedPhotoUrl = photo.url;
     this.photoSelected.emit(photo);
   }

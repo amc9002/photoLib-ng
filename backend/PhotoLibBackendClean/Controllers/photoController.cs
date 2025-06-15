@@ -6,7 +6,7 @@ using PhotoLibBackendClean.Dtos;
 namespace PhotoLibBackendClean.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/photos")]
     public class ApiController : ControllerBase
     {
         private readonly PhotoContext _context;

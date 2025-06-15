@@ -14,7 +14,7 @@ export class PhotoDescriptionComponent {
   @Output() descriptionSaved = new EventEmitter<string>();
   @Output() editingCancelled = new EventEmitter<void>();
   @ViewChild('descRef') descRef!: ElementRef;
-  
+
   private _editingFromOutside = false;
 
   @Input()
@@ -35,6 +35,11 @@ export class PhotoDescriptionComponent {
   }
 
   checkIfClamped() {
+    if (!this.descRef) {
+      console.warn('descRef не знойдзены');
+      this.isClamped = false;
+      return;
+    }
     const el = this.descRef.nativeElement as HTMLElement;
     this.isClamped = el.scrollHeight > el.clientHeight + 2; // +2 для невялікага люфта
   }

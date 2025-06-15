@@ -1,4 +1,6 @@
+<app-spinner *ngIf="loading$ | async"></app-spinner>
 <app-home
+    [photos]="photos"
     [selectedPhoto]="selectedPhoto"
     (photoSelected)="onPhotoSelected($event)"
     (editDescription)="onEditDescription()"
@@ -6,3 +8,4 @@
     (deletePhoto)="onDeletePhoto()" >
 </app-home>
 <app-confirm-dialog></app-confirm-dialog>
+

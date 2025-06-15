@@ -20,6 +20,7 @@ import { Photo } from '../../models/photo';
 })
 
 export class HomeComponent {
+  @Input() photos: Photo[] = [];
   @Input() selectedPhoto: Photo | null = null;
   @Output() photoSelected = new EventEmitter<Photo>();
   @Output() editDescription = new EventEmitter<void>();
