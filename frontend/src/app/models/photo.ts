@@ -1,20 +1,14 @@
 import { SafeUrl } from "@angular/platform-browser";
 
 export interface Photo {
-  id: number;
+  id: number | string;
+  fileName: string;
   url: string | SafeUrl;
-  description: string;
-  exif?: {
-    camera: string;
-    date: string;
-    size: string;
-    ISO: number;
-    Aperture?: string;
-    GPSLatitude?: number;
-    GPSLongitude?: number;
-    latitude?: number;
-    longitude?: number;
-    [key: string]: any; // для дадатковых палёў
-  };
+  title?: string,
+  description?: string;
+  exifData?: any;
+  file?: File;
   source?: 'backend' | 'mock';
+  isSynced: boolean;
+  isModified: boolean;
 }

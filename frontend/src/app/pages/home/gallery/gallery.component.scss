@@ -5,6 +5,12 @@
   border: 1px solid #ccc;
 }
 
+.photo-wrapper {
+  display: inline-block;
+  position: relative;
+  margin-right: 8px;
+}
+
 .thumbnail {
   height: 80px;
   margin-right: 8px;
@@ -39,4 +45,15 @@
 
 .thumbnail.selected {
   outline: 3px solid #007bff;
+}
+
+.unsynced-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
 }

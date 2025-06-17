@@ -1,0 +1,8 @@
+<div class="toolbar">
+  <label for="mode-select">Рэжым:</label>
+  <select id="mode-select" [(ngModel)]="selectedMode" (change)="onModeChange(selectedMode)">
+    <option [value]="AppMode.Work">Працоўны</option>
+    <option [value]="AppMode.Demo">Дэманстрацыя</option>
+  </select>
+  <button (click)="onSyncClick()">🔄 Сінхранізаваць</button>
+</div>

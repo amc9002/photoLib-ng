@@ -59,6 +59,8 @@ namespace PhotoLibBackendClean.Controllers
         [HttpPost]
         public async Task<ActionResult<PhotoFullDto>> PostPhoto([FromForm] PhotoUploadDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             byte[] imageData;
             using (var memoryStream = new MemoryStream())
             {
@@ -71,7 +73,7 @@ namespace PhotoLibBackendClean.Controllers
 
             var photo = new Photo
             {
-                Title = dto.Title,
+                Title = string.IsNullOrWhiteSpace(dto.Title) ? "[Без назвы]" : dto.Title,
                 Description = dto.Description,
                 ExifData = dto.ExifData,
                 ImageData = imageData

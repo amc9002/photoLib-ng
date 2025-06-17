@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { PhotoApiService } from './photo-api.service';
 import { MockPhotoService } from './mock-photo.service';
 import { LoadingService } from './loading.service';
+import { PhotoIndexedDbService } from './photo-of-indexedDB.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,14 +14,30 @@ export class PhotoService {
   private photosSubject = new BehaviorSubject<Photo[]>([]);
   photos$ = this.photosSubject.asObservable(); // public sibscriction
 
+  setPhotos(photos: Photo[]) {
+    this.photosSubject.next(photos);
+  }
+
   private useMock = false;
 
   constructor(
     private loadingService: LoadingService,
     private apiService: PhotoApiService,
-    private mockService: MockPhotoService
+    private mockService: MockPhotoService,
+    private storageService: PhotoIndexedDbService
   ) {
     this.loadPhotos(); // загрузка пры ініцыялізацыі
+  }
+
+  async loadPhotosFromStorage(): Promise<void> {
+    try {
+      const photosFromStorage = await this.storageService.getAllPhotos();
+      console.log('PhotoService: All photos from storage:', photosFromStorage);
+      this.photos = photosFromStorage;
+      this.photosSubject.next([...this.photos]);
+    } catch (error) {
+      console.error('PhotoService: Error loading photos from IndexedDB:', error);
+    }
   }
 
   private loadPhotos(): void {
@@ -30,11 +47,15 @@ export class PhotoService {
         this.photos = data;
         this.photosSubject.next([...this.photos]);
       },
-      error: (error) => {
-        console.warn("⚠️ Backend is unaccessible, using mock-photos:", error.message);
+      error: async (error) => {
+        console.warn("⚠️ PhotoService: Backend is unaccessible, using mock-photos:", error.message);
         this.useMock = true;
-        this.photos = this.mockService.getMockPhotos();
-        this.photosSubject.next([...this.photos]);
+        await this.loadPhotosFromStorage();
+        if (!this.photos.length) {
+          // Калі IndexedDB пусты, выкарыстоўваем mock
+          this.photos = this.mockService.getMockPhotos();
+          this.photosSubject.next([...this.photos]);
+        }
       }
     });
   }
@@ -43,7 +64,7 @@ export class PhotoService {
     return this.photos;
   }
 
-  addPhoto(file: File): void {
+  async addPhoto(file: File): Promise<void> {
     if (this.useMock) {
       const newPhoto = this.mockService.addMockPhoto(file);
       this.photos.push(newPhoto);
@@ -53,26 +74,30 @@ export class PhotoService {
       formData.append('ImageFile', file); // ВАЖНА: 'ImageFile' павінна адпавядаць DTO на бэкендзе
       formData.append('Title', 'Title from frontend');
       formData.append('Description', 'Photo was added with Angular');
-      formData.append('ExifData', '{}'); // пакуль пусты JSON
+      const exifData = await this.storageService.extractExifData(file); // ты ўжо маеш гэты метад у PhotoIndexedDbService
+      formData.append('ExifData', JSON.stringify(exifData ?? {})); // гарантаваны JSON-радок
 
       this.loadingService.show(); // паказаць спінэр
 
       this.apiService.uploadPhoto(formData).subscribe({
         next: (response) => {
-          console.log('✅ Photo is added to database: ID =', response.id);
+          console.log('✅ PhotoService: Photo is added to database: ID =', response.id);
           const newPhoto: Photo = {
             id: response.id,
+            fileName: response.name,
             url: 'data:image/jpeg;base64,' + response.imageBase64,
             description: response.description,
-            exif: response.exifData,
-            source: 'backend'
+            exifData: response.exifData,
+            source: 'backend',
+            isSynced: true, 
+            isModified: false
           };
           this.photos.push(newPhoto);
           this.photosSubject.next([...this.photos]);
           this.loadingService.hide(); // схаваць спінэр
         },
         error: (error) => {
-          console.warn("Server doesn't answer, fake photo adding:", error.message);
+          console.warn("PhotoService: Server doesn't answer, fake photo adding:", error.message);
           this.useMock = true;
           const fallbackPhoto = this.mockService.addMockPhoto(file);
           this.photos.push(fallbackPhoto);
@@ -84,36 +109,36 @@ export class PhotoService {
   }
 
   updatePhotoDescription(id: number, description: string): void {
-  this.apiService.updatePhotoDescription(id, description).subscribe({
-    next: () => {
-      const index = this.photos.findIndex(p => p.id === id);
-      if (index >= 0) {
-        this.photos[index].description = description;
-        this.photosSubject.next([...this.photos]);
+    this.apiService.updatePhotoDescription(id, description).subscribe({
+      next: () => {
+        const index = this.photos.findIndex(p => p.id === id);
+        if (index >= 0) {
+          this.photos[index].description = description;
+          this.photosSubject.next([...this.photos]);
+        }
+        console.log(`✅ PhotoService: Photo description updated: ID = ${id}`);
+      },
+      error: (error) => {
+        console.warn("PhotoService: Server update failed, fallback to mock update:", error.message);
+        const index = this.photos.findIndex(p => p.id === id);
+        if (index >= 0) {
+          this.photos[index].description = description;
+          this.photosSubject.next([...this.photos]);
+        }
       }
-      console.log(`✅ Photo description updated: ID = ${id}`);
-    },
-    error: (error) => {
-      console.warn("Server update failed, fallback to mock update:", error.message);
-      const index = this.photos.findIndex(p => p.id === id);
-      if (index >= 0) {
-        this.photos[index].description = description;
-        this.photosSubject.next([...this.photos]);
-      }
-    }
-  });
-}
+    });
+  }
 
 
   deletePhoto(photoToDelete: Photo): void {
-    console.log("Current photos:", this.photos.map(p => p.id));
-    console.log("Looking for", photoToDelete.id);
+    console.log("PhotoService: Current photos:", this.photos.map(p => p.id));
+    console.log("PhotoService: Looking for", photoToDelete.id);
     const index = this.photos.findIndex(p => p.id === photoToDelete.id);
     if (index >= 0) {
       this.photos.splice(index, 1);
       this.photosSubject.next([...this.photos]); // апублікаваць новы стан
     }
-    console.log("Current photos:", this.photos.map(p => p.id));
+    console.log("PhotoService: Current photos:", this.photos.map(p => p.id));
   }
 }
 

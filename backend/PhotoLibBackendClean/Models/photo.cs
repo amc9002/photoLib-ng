@@ -7,7 +7,7 @@ namespace PhotoLibBackendClean.Models
         public int Id { get; set; }
         [Required]
         [MaxLength(100)]
-        public string? Title { get; set; }
+        public string Title { get; set; } = String.Empty;
         public byte[]? ImageData { get; set; } = default!;
         [MaxLength(300)]
         public string? Description { get; set; } = string.Empty;

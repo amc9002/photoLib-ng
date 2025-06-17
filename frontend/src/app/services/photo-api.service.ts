@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Photo } from '../models/photo';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PhotoApiService {
-  private apiUrl = 'https://localhost:7211/api/photos';
+  private apiUrl = 'http://localhost:5171/api/photos';
 
   constructor(private http: HttpClient) { }
 
@@ -22,5 +22,16 @@ export class PhotoApiService {
   updatePhotoDescription(id: number, description: string) {
     const body = { description };
     return this.http.put<any>(`${this.apiUrl}/${id}`, body);
+  }
+
+  async downloadPhotoFile(id: number | string): Promise<File> {
+    const url = `${this.apiUrl}/${id}/file`;
+    const blob = await firstValueFrom(this.http.get(url, { responseType: 'blob' }));
+
+    if (!blob) {
+      throw new Error('Failed to download photo file: blob is undefined');
+    }
+
+    return new File([blob], `photo_${id}.jpg`, { type: blob.type });
   }
 }

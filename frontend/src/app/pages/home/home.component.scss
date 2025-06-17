@@ -1,8 +1,9 @@
 .layout {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   grid-template-columns: 1.8fr 1fr 1fr;
   grid-template-areas:
+    "toolbar toolbar toolbar"
     "gallery gallery gallery"
     "photo   sidebar    map";
   gap: 16px;

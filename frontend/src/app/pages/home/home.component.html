@@ -1,4 +1,8 @@
 <div class="layout">
+  <div style="grid-area: toolbar;">
+    <app-toolbar (syncRequested)="onSyncClickedFromToolbar()"></app-toolbar>
+  </div>
+  
   <div style="grid-area: gallery;">
     <app-gallery 
     [photos]="photos" 

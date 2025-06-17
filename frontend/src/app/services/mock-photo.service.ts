@@ -13,15 +13,16 @@ export class MockPhotoService {
   }
 
   addMockPhoto(file: File): Photo {
-    const newId = this.photos.length > 0
-      ? Math.max(...this.photos.map(p => p.id)) + 1
-      : 1;
+    const newId = this.photos.length + 1;
 
       const newPhoto: Photo = {
       id: newId,
+      fileName: "New name",
       url: URL.createObjectURL(file),
       description: 'New photo',
-      source: 'mock'
+      source: 'mock',
+      isSynced: false,
+      isModified: false
     };
     this.photos.push(newPhoto);
     return newPhoto;
