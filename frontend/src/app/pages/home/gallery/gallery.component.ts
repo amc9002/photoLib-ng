@@ -17,10 +17,10 @@ export class GalleryComponent {
   @Input() photos: PhotoWithUrl[] = [];
   @Output() photoSelected = new EventEmitter<PhotoWithUrl>();
 
-  selectedPhotoUrl?: SafeUrl;
+  selectedPhotoId?: number | string;
 
   selectPhoto(photo: PhotoWithUrl) {
-    this.selectedPhotoUrl = photo.url;
+    this.selectedPhotoId = photo.id;
     this.photoSelected.emit(photo);
   }
 }

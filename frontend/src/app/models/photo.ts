@@ -11,4 +11,5 @@ export interface Photo {
   source?: 'backend' | 'mock';
   isSynced: boolean;
   isModified: boolean;
+  isDeleted: boolean
 }

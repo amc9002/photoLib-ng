@@ -131,9 +131,9 @@ namespace PhotoLibBackendClean.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Photo>> DeletePhoto(int id)
+        public async Task<ActionResult<Photo>> DeletePhoto(string id)
         {
-            var photo = await _context.Photos.FindAsync(id);
+            var photo = await _context.Photos.FirstOrDefaultAsync(p => p.Id.ToString() == id);
             if (photo == null)
                 return NotFound();
 

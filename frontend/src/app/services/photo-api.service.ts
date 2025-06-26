@@ -34,4 +34,8 @@ export class PhotoApiService {
 
     return new File([blob], `photo_${id}.jpg`, { type: blob.type });
   }
+
+  async deletePhoto(id: number | string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
 }

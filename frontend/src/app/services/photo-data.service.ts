@@ -35,7 +35,7 @@ export class PhotoDataService {
     const serverPhotos = await firstValueFrom(this.api.getPhotos());
 
     for (const sp of serverPhotos) {
-      const exists = await this.storage.photoExists(Number(sp.id));
+      const exists = await this.storage.photoExists(sp.id);
       if (exists) {
         console.log(`ℹ️ PhotoDataService: Photo with id=${sp.id} already exists in IndexedDB, skipping`);
         continue;
@@ -52,7 +52,7 @@ export class PhotoDataService {
         isSynced: true
       };
 
-      await this.storage.savePhotoWithId(Number(sp.id), photoToStore); // 💡 гл. ніжэй
+      await this.storage.savePhotoWithId(sp.id, photoToStore); // 💡 гл. ніжэй
     }
 
     console.log('✅ PhotoDataService: Photos from server loaded into IndexedDB');
@@ -94,7 +94,7 @@ export class PhotoDataService {
 
       // ✅ Захоўваем новую версію з новым ID
       console.log(`PhotoDataService: Photo returned from server with id: ${response.id}`);
-      await this.storage.savePhotoWithId(Number(response.id), { ...newPhoto, file: photo.file });
+      await this.storage.savePhotoWithId(response.id, { ...newPhoto, file: photo.file });
 
     } catch (error) {
       console.error('❌ PhotoDataService: Error syncing photo to server:', error);
@@ -107,7 +107,21 @@ export class PhotoDataService {
       const unsyncedPhotos = await this.storage.getPhotosForSync();
 
       for (const photo of unsyncedPhotos) {
-        await this.uploadPhotoToServer(photo as Photo); // або ствары асобны мапінг, калі трэба
+        console.log('🔍 Праверка photo:', photo.id, 'isDeleted =', photo.isDeleted);
+        if (photo.isDeleted) {
+          if (!photo.id) {
+            console.warn(`⚠️ PhotoDataService: Фота без id, прапускаем выдаленне`, photo);
+            continue;
+          }
+
+          console.log(`🗑️ PhotoDataService: Фота з id=${photo.fileName} пазначана на выдаленне`);
+          console.log('📡 Спрабуем выдаліць photo.id =', photo.id);
+          await this.api.deletePhoto(photo.id); // чакаем, пакуль выдаліцца з сервера
+          await this.storage.deletePhoto(photo.id); // потым выдаляем з IndexedDB
+          console.log(`✅ PhotoDataService: Фота з id=${photo.fileName} выдалена з сервера і IndexedDB`);
+        } else {
+          await this.uploadPhotoToServer(photo as Photo);
+        }
       }
 
     } catch (error) {
@@ -117,9 +131,22 @@ export class PhotoDataService {
 
   async deletePhoto(photo: Photo): Promise<void> {
     console.log("➡️ PhotoDataService: Маркіруем фота як выдаленае ў IndexedDB:", photo);
-    await this.storage.markPhotoDeleted(photo.id);
-    // console.log("➡️ Выдаляем фота праз рэпазіторый:", photo);
-    // await this.storage.deletePhoto(photo.id);
+
+    // ✅ 1. Калі фота было ўжо сінхранізавана — маркіруем
+    if (photo.isSynced) {
+      await this.storage.markPhotoDeleted(photo.id);
+      console.log("🟡 PhotoDataService: Фота пазначана як выдаленае і будзе выдалена пры сінхранізацыі");
+      return;
+    }
+
+    // ✅ 2. Калі фота яшчэ не сінхранізавана — проста выдаляем
+    await this.storage.deletePhoto(photo.id);
+    console.log("🗑️ PhotoDataService: Фота выдалена з IndexedDB");
+  }
+
+  async markPhotoDeleted(id: number | string): Promise<void> {
+    console.log(`PhotoDataService: Marking photo id=${id} as deleted`);
+    return this.storage.markPhotoDeleted(id);
   }
 
   async clearLocalStorage(): Promise<void> {

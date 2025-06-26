@@ -7,6 +7,7 @@ import { MapComponent } from './map/map.component';
 import { Photo } from '../../models/photo';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { FormsModule } from '@angular/forms';
+import { SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-home',
@@ -24,7 +25,7 @@ import { FormsModule } from '@angular/forms';
 })
 
 export class HomeComponent {
-  @Input() photos: Photo[] = [];
+  @Input() photos: (Photo & { url: SafeUrl })[] = [];
   @Input() selectedPhoto: Photo | null = null;
   @Output() photoSelected = new EventEmitter<Photo>();
   @Output() editDescription = new EventEmitter<void>();

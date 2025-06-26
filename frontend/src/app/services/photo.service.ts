@@ -15,6 +15,11 @@ export class PhotoService {
   photos$ = this.photosSubject.asObservable(); // public sibscriction
 
   setPhotos(photos: Photo[]) {
+    console.log("📸 setPhotos:", photos.map(p => ({
+      id: p.id,
+      file: p.file,
+      url: p.url
+    })));
     this.photosSubject.next(photos);
   }
 
@@ -89,8 +94,9 @@ export class PhotoService {
             description: response.description,
             exifData: response.exifData,
             source: 'backend',
-            isSynced: true, 
-            isModified: false
+            isSynced: true,
+            isModified: false,
+            isDeleted: false
           };
           this.photos.push(newPhoto);
           this.photosSubject.next([...this.photos]);

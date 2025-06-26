@@ -7,7 +7,7 @@
       class="thumbnail" 
       [src]="photo.url" 
       [alt]="photo.description"
-      [class.selected]="photo.url === selectedPhotoUrl" 
+      [class.selected]="photo.id === selectedPhotoId" 
       [class.mock-photo]="photo.source === 'mock'"
     />
     <div class="unsynced-badge" *ngIf="!photo.isSynced">

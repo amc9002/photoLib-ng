@@ -15,7 +15,8 @@ export const photos: Photo[] = [
         Aperture: 'f/2.8'
       },
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     },
     {
       id: 2,
@@ -24,7 +25,8 @@ export const photos: Photo[] = [
       url: 'assets/images/IMG_20221209_135905.jpg',
       description: 'Віта',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     },
     {
       id: 3,
@@ -33,7 +35,8 @@ export const photos: Photo[] = [
       url: 'assets/images/photo_2024-04-25_11-32-00.jpg',
       description: 'Наш двор',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     },
     {
       id: 4,
@@ -42,7 +45,8 @@ export const photos: Photo[] = [
       url: 'assets/images/IMG_20250601_120944.jpg',
       description: 'Мачанка',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     },
     {
       id: 5,
@@ -51,7 +55,8 @@ export const photos: Photo[] = [
       url: 'assets/images/IMG_20250608_164930.jpg',
       description: 'Ольштын',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     },
     {
       id: 6,
@@ -60,6 +65,7 @@ export const photos: Photo[] = [
       url: 'https://www.kliniki.pl/photos/286/dental-clinic-lux-med-stomatologia-olsztyn_285841_h1000.jpg',
       description: 'Клініка',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     }
   ];

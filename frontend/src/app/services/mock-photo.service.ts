@@ -22,7 +22,8 @@ export class MockPhotoService {
       description: 'New photo',
       source: 'mock',
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     };
     this.photos.push(newPhoto);
     return newPhoto;

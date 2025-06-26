@@ -1,6 +1,6 @@
 <app-spinner *ngIf="loading$ | async"></app-spinner>
 <app-home
-    [photos]="photos"
+    [photos]="photosWithUrl" 
     [selectedPhoto]="selectedPhoto"
     (syncRequested)="onSyncRequested()"
     (photoSelected)="onPhotoSelected($event)"

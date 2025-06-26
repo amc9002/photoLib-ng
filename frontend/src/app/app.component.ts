@@ -10,9 +10,10 @@ import { Observable } from 'rxjs';
 import { SpinnerComponent } from './shared/spinner/spinner.component';
 import { PhotoDataService } from './services/photo-data.service';
 import { PhotoUtilsService } from './services/photo-utils.service';
-import { PhotoToStore } from './services/photo-of-indexedDB.service';
+import { PhotoIndexedDbService, PhotoToStore } from './services/photo-of-indexedDB.service';
 import { Subscription } from 'rxjs';
 import { AppModeService } from './services/app-mode.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,7 @@ import { AppModeService } from './services/app-mode.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'photolib-ng';
   loading$: Observable<boolean>;
   photos$!: Observable<Photo[]>;
@@ -33,6 +34,7 @@ export class AppComponent {
   private subscriptions = new Subscription();
 
   photos: Photo[] = [];
+  photosWithUrl: (Photo & { url: SafeUrl })[] = [];
 
   selectedPhoto: Photo | null = null;
 
@@ -42,7 +44,9 @@ export class AppComponent {
     private photoService: PhotoService,
     private photoDataService: PhotoDataService,
     private appModeService: AppModeService,
-    private photoUtils: PhotoUtilsService
+    private photoUtils: PhotoUtilsService,
+    private indexedDbService: PhotoIndexedDbService,
+    private sanitizer: DomSanitizer
   ) {
     this.loading$ = this.loadingService.loading$;
     this.photoService.photos$.subscribe(p => {
@@ -54,8 +58,26 @@ export class AppComponent {
     this.selectedPhoto = photo;
   }
 
+  private createPhotosWithUrl(photos: Photo[]): (Photo & { url: SafeUrl })[] {
+    // Спачатку вызваляем старыя URL, калі яны былі
+    this.photosWithUrl.forEach(p => {
+      try {
+        URL.revokeObjectURL((p.url as any).changingThisBreaksApplicationSecurity || p.url);
+      } catch { }
+    });
+
+    // Стварэнне новых URL
+    return photos.map(photo => ({
+      ...photo,
+      url: photo.file
+        ? this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(photo.file))
+        : '' // ці можна падставіць запасны url
+    }));
+  }
+
   async loadPhotos() {
     this.photos = await this.photoDataService.getAllPhotos();
+    this.photosWithUrl = this.createPhotosWithUrl(this.photos);
     this.photoService.setPhotos(this.photos); // Абнаўляем сэрвіс фота, калі трэба
   }
 
@@ -66,12 +88,16 @@ export class AppComponent {
     this.photos = photos;
   }
 
-  ngOnInit(): void {
-    this.syncUnsyncedPhotosOnStartup();
+  async ngOnInit(): Promise<void> {
+    await this.indexedDbService.initDB(); // 🟢 1. Спачатку — адкрыць IndexedDB
+
+    await this.syncUnsyncedPhotosOnStartup(); // 🟢 2. Сінхранізаваць з серверу
+
     const modeSub = this.appModeService.mode$.subscribe(() => {
       console.log('AppComponent: App mode changed, reloading photos');
-      this.loadPhotos();
+      this.loadPhotos(); // 🟢 3. Загружаем толькі калі IndexedDB гатовая
     });
+
     this.subscriptions.add(modeSub);
   }
 
@@ -79,9 +105,10 @@ export class AppComponent {
     this.subscriptions.unsubscribe();
   }
 
-  onSyncRequested() {
+  async onSyncRequested() {
     console.log("📡 AppComponent: Сінхранізацыя запрошана з toolbar");
-    this.photoDataService.syncWithServer();
+    await this.photoDataService.syncWithServer();
+    await this.loadPhotos(); // ⬅️ перазагружаем з IndexedDB
   }
 
   private async syncUnsyncedPhotosOnStartup() {
@@ -121,7 +148,8 @@ export class AppComponent {
       file: file,     // Калі патрэбна захоўваць файл
       url: url,        // 👈 Дадаем url для адлюстравання
       isSynced: false,
-      isModified: false
+      isModified: false,
+      isDeleted: false
     };
     this.photos.push(newPhoto);
     const photoToStore: PhotoToStore = {
@@ -132,10 +160,7 @@ export class AppComponent {
     };
     this.photoDataService.savePhoto(photoToStore).then(() => {
       console.log('🟡 AppComponent: Photo saved locally (not synced)');
-      this.photoDataService.getAllPhotos().then((photos) => {
-        console.log('📦 AppComponent: All photos from storage:', photos);
-        this.photoService.setPhotos(photos);
-      });
+      this.loadPhotos(); // ⬅️ Гэта абнаўляе і `photosWithUrl`
     });
   }
 
@@ -145,18 +170,23 @@ export class AppComponent {
 
     this.confirmDialogService.show(
       'Are you sure you want to delete this photo?',
-      () => {
+      async () => {
         this.photoService.deletePhoto(this.selectedPhoto!);
-        this.photoDataService.deletePhoto(this.selectedPhoto!)
-          .then(() => console.log('🗑️ AppComponent: Фота таксама выдалена з IndexedDB'));
+
+        // 🟡 ВЫПРАЎЛЕНА: Маркіруем фота як выдаленае
+        await this.photoDataService.markPhotoDeleted(this.selectedPhoto!.id);
+        console.log('🗑️ AppComponent: Фота пазначана як выдаленае');
+
+        await this.loadPhotos(); // ⬅️ абнаўляем фоткі з IndexedDB
         this.selectedPhoto = null;
-        console.log("AppComponent: Фота выдалена");
+        console.log("AppComponent: Фота выдалена (лагічна)");
       },
       () => {
         console.log("AppComponent: Выдаленьне адменена");
       }
     );
   }
+
 
   async clearPhotosStorage() {
     await this.photoDataService.clearLocalStorage();
