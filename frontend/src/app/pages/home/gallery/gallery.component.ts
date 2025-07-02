@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule, NgFor } from '@angular/common';
-import { Photo } from '../../../models/photo';
+import { Photo } from '../../../models/photo-interfaces';
 import { SafeUrl } from '@angular/platform-browser';
 
 

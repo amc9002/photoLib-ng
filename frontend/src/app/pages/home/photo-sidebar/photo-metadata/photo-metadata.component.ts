@@ -17,9 +17,20 @@ export class PhotoMetadataComponent implements OnChanges {
   modalOpen = false;
 
   async ngOnChanges(changes: SimpleChanges) {
+    if (!this.photo || !this.photo.url) {
+      this.exif = null;
+      this.exifExtracted.emit(null);
+      return;
+    }
+
     if (changes['photo'] && this.photo?.url) {
       try {
-        const response = await fetch(this.photo.url);
+        const rawUrl = this.photo.url instanceof Object && 'changingThisBreaksApplicationSecurity' in this.photo.url
+          ? (this.photo.url as any).changingThisBreaksApplicationSecurity
+          : this.photo.url;
+
+        console.log("🔍 Trying to fetch from rawUrl:", rawUrl);
+        const response = await fetch(rawUrl);
         const blob = await response.blob();
 
         const exifData = await exifr.parse(blob);
@@ -57,6 +68,5 @@ export class PhotoMetadataComponent implements OnChanges {
   toggleModal() {
     this.modalOpen = !this.modalOpen;
   }
-
 
 }

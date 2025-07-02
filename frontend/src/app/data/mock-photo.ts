@@ -1,4 +1,4 @@
-import { Photo } from "../models/photo";
+import { Photo } from "../models/photo-interfaces";
 
 export const photos: Photo[] = [
     {
@@ -7,7 +7,7 @@ export const photos: Photo[] = [
       fileName: 'images/1000_F_199824276_somlbrYKh1XlUnyvLbn3xwjZLlXvEkHx.jpg',
       url: 'assets/images/1000_F_199824276_somlbrYKh1XlUnyvLbn3xwjZLlXvEkHx.jpg',
       description: 'Сукенка',
-      exifData: {
+      exif: {
         camera: 'Canon EOS 600D',
         date: '2024-05-12',
         size: '5 MB',

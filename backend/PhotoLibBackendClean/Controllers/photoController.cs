@@ -94,23 +94,22 @@ namespace PhotoLibBackendClean.Controllers
             return CreatedAtAction(nameof(GetPhoto), new { id = uploadedPhoto.Id }, uploadedPhoto);
         }
 
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePhoto(int id, [FromBody] PhotoUpdateDto dto)
+        public async Task<IActionResult> UpdatePhotoMetadata(int id, [FromForm] string Title, [FromForm] string Description, [FromForm] string ExifData)
         {
             var photo = await _context.Photos.FindAsync(id);
             if (photo == null)
                 return NotFound();
 
-            if (dto.Title != null)
-                photo.Title = dto.Title;
-            if (dto.Description != null)
-                photo.Description = dto.Description;
-            if (dto.ExifData != null)
-                photo.ExifData = dto.ExifData;
+            photo.Title = Title;
+            photo.Description = Description;
+            photo.ExifData = ExifData;
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
 
         [HttpPut("{id}/image")]
         public async Task<IActionResult> UpdatePhotoImage(int id, [FromForm] IFormFile imageFile)

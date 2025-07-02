@@ -1,10 +1,16 @@
 <div class="sidebar">
-  <app-photo-description [description]="photo?.description?? null" [editingFromOutside]="isEditingDescription"
-    (descriptionSaved)="onDescriptionSaved($event)" (editingCancelled)="onCancelEditing()">
+  <app-photo-description [description]="photo?.description?? null" [editingFromOutside]="isEditingDescription">
+    <!-- (descriptionSaved)="onDescriptionSaved($event)" (editingCancelled)="onCancelEditing()"> -->
   </app-photo-description>
-  <app-photo-metadata [photo]="photo" (exifExtracted)="onExifExtracted($event)"></app-photo-metadata>
+  <app-photo-metadata 
+    [photo]="photo" 
+    (exifExtracted)="onExifExtracted($event)"
+  >
+</app-photo-metadata>
   <div class="actions-wrapper">
-    <app-photo-actions (editDescription)="onEditDescription()" (uploadPhoto)="onUploadPhoto($event)"
+    <app-photo-actions 
+      (editDetails)="onEditDetails()" 
+      (uploadPhoto)="onUploadPhoto($event)"
       (deletePhoto)="onDeletePhoto()">
     </app-photo-actions>
   </div>

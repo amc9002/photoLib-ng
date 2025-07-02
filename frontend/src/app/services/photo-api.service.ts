@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
-import { Photo } from '../models/photo';
+import { Photo } from '../models/photo-interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +19,8 @@ export class PhotoApiService {
     return this.http.post(this.apiUrl, formData);
   }
 
-  updatePhotoDescription(id: number, description: string) {
-    const body = { description };
-    return this.http.put<any>(`${this.apiUrl}/${id}`, body);
+  updatePhoto(id: number | string, formData: FormData): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, formData);
   }
 
   async downloadPhotoFile(id: number | string): Promise<File> {

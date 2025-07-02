@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Photo } from '../../../models/photo';
+import { Photo } from '../../../models/photo-interfaces';
 import { PhotoDescriptionComponent } from './photo-description/photo-description.component';
 import { PhotoMetadataComponent } from './photo-metadata/photo-metadata.component';
 import { PhotoActionsComponent } from './photo-actions/photo-actions.component';
@@ -20,43 +20,45 @@ import { PhotoActionsComponent } from './photo-actions/photo-actions.component';
 export class PhotoSidebarComponent {
   @Input() photo: Photo | null = null;
   @Output() exifExtracted = new EventEmitter<any>();
-  @Output() deletePhoto = new EventEmitter<void>();
-  @Output() editDescription = new EventEmitter<void>();
+  @Output() requestDelete = new EventEmitter<void>();
+  @Output() requestEdit = new EventEmitter<{ title: string, description: string }>();
   @Output() uploadPhoto = new EventEmitter<File>();
+  // @Output() descriptionUpdated = new EventEmitter<string>();
+  // @Output() titleUpdated = new EventEmitter<string>();
 
   isEditingDescription = false;
 
   onExifExtracted(exif: any) {
+    console.log('🧩 SidebarComponent: photo =', this.photo);
+    console.log('PhotoSidebarComponent: EXIF extracted', exif);
     this.exifExtracted.emit(exif);
   }
 
-  onEditDescription() {
-    this.isEditingDescription = true;
+  onEditDetails() {
+    if (!this.photo) return;
+    this.requestEdit.emit({
+      title: this.photo?.title ?? '',
+      description: this.photo?.description ?? ''
+    });
   }
 
-  onDescriptionSaved(newDescription: string) {
-    if (this.photo) {
-      this.photo.description = newDescription;
-    }
-    this.isEditingDescription = false;
-  }
+  // onDescriptionSaved(newDescription: string) {
+  //   if (this.photo) {
+  //     this.photo.description = newDescription;
+  //   }
+  //   this.isEditingDescription = false;
+  // }
 
-  onCancelEditing() {
-    this.isEditingDescription = false;
-  }
+  // onCancelEditing() {
+  //   this.isEditingDescription = false;
+  // }
 
   onUploadPhoto(file: File) {
-    console.log('Файл абраны', file);
     this.uploadPhoto.emit(file);
-    // const newPhoto: Photo = {
-    //   id: Date.now(),
-    //   url: URL.createObjectURL(file),
-    //   description: 'New photo'
   }
 
 
   onDeletePhoto() {
-    console.log("Націснута: выдаліць фота");
-    this.deletePhoto.emit();
+    this.requestDelete.emit();
   }
 }

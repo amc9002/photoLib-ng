@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GalleryComponent } from './gallery/gallery.component';
 import { PhotoViewerComponent } from './photo-viewer/photo-viewer.component';
 import { PhotoSidebarComponent } from './photo-sidebar/photo-sidebar.component';
 import { MapComponent } from './map/map.component';
-import { Photo } from '../../models/photo';
+import { Photo, PhotoWithUrl } from '../../models/photo-interfaces';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { FormsModule } from '@angular/forms';
-import { SafeUrl } from '@angular/platform-browser';
+
 
 @Component({
   selector: 'app-home',
@@ -25,18 +25,18 @@ import { SafeUrl } from '@angular/platform-browser';
 })
 
 export class HomeComponent {
-  @Input() photos: (Photo & { url: SafeUrl })[] = [];
+  @Input() photos: PhotoWithUrl[] = [];;
   @Input() selectedPhoto: Photo | null = null;
   @Output() photoSelected = new EventEmitter<Photo>();
-  @Output() editDescription = new EventEmitter<void>();
+  @Output() editPhoto = new EventEmitter<{title: string, description: string}>();
   @Output() uploadPhoto = new EventEmitter<File>();
   @Output() deletePhoto = new EventEmitter<void>();
   @Output() syncRequested = new EventEmitter<void>();
+  @Output() exifExtracted = new EventEmitter<any>();
 
-  exifData: any = {
-    GPSLatitude: 52.2297,
-    GPSLongitude: 21.0122
-  };
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  exifData: any = null;
 
   onSyncClickedFromToolbar() {
     console.log("📤 HomeComponent: Перадаю падзею сінхранізацыі ў AppComponent");
@@ -50,11 +50,14 @@ export class HomeComponent {
   onExifExtracted(exif: any) {
     console.log('HomeComponent: EXIF received in HomeComponent:', exif);
     this.exifData = exif;
+    this.cdr.detectChanges();
+    this.exifExtracted.emit(exif);
+    
   }
 
-  onEditDescription() {
+  onEditPhoto(details: {title: string, description: string}) {
     console.log("HomeComponent: The description will be edited");
-    this.editDescription.emit();
+    this.editPhoto.emit(details);
   }
 
   onUploadPhoto(file: File) {

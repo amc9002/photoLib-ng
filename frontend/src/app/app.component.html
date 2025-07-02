@@ -1,12 +1,19 @@
 <app-spinner *ngIf="loading$ | async"></app-spinner>
 <app-home
-    [photos]="photosWithUrl" 
+    [photos]="photos" 
     [selectedPhoto]="selectedPhoto"
     (syncRequested)="onSyncRequested()"
     (photoSelected)="onPhotoSelected($event)"
-    (editDescription)="onEditDescription()"
+    (exifExtracted)="exifData = $event"
+    (editPhoto)="onEdit()"
     (uploadPhoto)="onUploadPhoto($event)"
     (deletePhoto)="onDeletePhoto()" >
 </app-home>
 <app-confirm-dialog></app-confirm-dialog>
+<app-edit-photo-dialog
+    *ngIf="editDialogVisible"
+    [photo]="selectedPhoto"
+    (cancel)="onCancelEdit()"
+    (save)="onSaveEdit($event)">
+</app-edit-photo-dialog>
 

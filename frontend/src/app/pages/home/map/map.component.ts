@@ -8,8 +8,6 @@ import {
   AfterViewInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-// @ts-ignore
 import * as L from 'leaflet';
 
 @Component({
@@ -104,7 +102,18 @@ export class MapComponent implements OnChanges, AfterViewInit {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(this.map);
 
-    this.marker = L.marker(coords).addTo(this.map).bindPopup('Photo location');
+    const markerIcon = L.icon({
+      iconUrl: 'assets/leaflet/marker-icon.png',
+      shadowUrl: 'assets/leaflet/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    this.marker = L.marker(coords, { icon: markerIcon })
+      .addTo(this.map)
+      .bindPopup('Photo location');
     this.marker.openPopup();
 
     setTimeout(() => {

@@ -1,19 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Photo } from '../models/photo';
+import { Photo, PhotoToStore, PhotoToUpdate } from '../models/photo-interfaces';
 import * as exifr from 'exifr';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 
-export interface PhotoToStore {
-  id?: number | string,
-  file: File;
-  fileName: string;
-  description?: string;
-  title?: string;
-  exif?: any;
-  isSynced?: boolean;
-  isDeleted?: boolean;   // Пазначана на выдаленне
-  isModified?: boolean;  // Апісанне/іншыя даныя зменены
-}
 
 type StoredPhoto = PhotoToStore & { id: number | string };
 
@@ -28,7 +17,10 @@ export class PhotoIndexedDbService {
 
   private dbInitPromise!: Promise<void>;
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor(
+    private sanitizer: DomSanitizer
+
+  ) {
     this.dbInitPromise = this.initDB(); // запамінаем проміс
   }
 
@@ -58,116 +50,159 @@ export class PhotoIndexedDbService {
   }
 
 
-  async waitForDBReady(): Promise<void> {
+  private async waitForDBReady(): Promise<void> {
     await this.dbInitPromise; // чакаем, пакуль база будзе адкрыта
   }
 
-  async savePhoto(photo: PhotoToStore): Promise<number> {
+
+  private async performTransaction<T>(
+    mode: IDBTransactionMode,
+    operation: (store: IDBObjectStore, transaction: IDBTransaction) => Promise<T> | T
+  ): Promise<T> {
     await this.waitForDBReady();
 
-    return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([this.storeName], 'readwrite');
+    return new Promise<T>((resolve, reject) => {
+      const transaction = this.db.transaction([this.storeName], mode);
       const store = transaction.objectStore(this.storeName);
 
-      const photoData = {
-        file: photo.file,
-        fileName: photo.fileName,
-        type: photo.file.type,
-        date: new Date().toISOString(),
-        description: photo.description || '',
-        title: photo.title || '',
-        exif: photo.exif || null,
-        isSynced: photo.isSynced ?? false
-      };
-
-      const request = store.add(photoData);
-
-      request.onsuccess = (event) => {
-        const id = (event.target as IDBRequest).result as number;
-        console.log('✅ PhotoIndexedDbService: Photo saved in IndexedDB, ID =', id);
-        resolve(id);
-      };
-
-      request.onerror = () => {
-        console.error('❌ PhotoIndexedDbService: Error saving photo in IndexedDB:', request.error);
-        reject(request.error);
-      };
+      // Выклікаем перададзеную функцыю
+      Promise.resolve(operation(store, transaction))
+        .then(result => {
+          transaction.oncomplete = () => resolve(result);
+          transaction.onerror = () => reject(transaction.error);
+          transaction.onabort = () => reject(transaction.error);
+        })
+        .catch(err => {
+          transaction.abort();
+          reject(err);
+        });
     });
   }
 
-  async savePhotoWithId(id: number | string, photo: PhotoToStore): Promise<void> {
-    await this.waitForDBReady();
 
-    return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
+  async saveNew(photo: PhotoToStore): Promise<number> {
+    return this.performTransaction<number>('readwrite', (store) => {
+      return new Promise<number>((resolve, reject) => {
+        const request = store.add(photo);
 
-      const photoData = {
-        id: id, // 🔧 Усталёўваем серверны id
-        file: photo.file,
-        fileName: photo.fileName,
-        type: photo.file.type,
-        date: new Date().toISOString(),
-        description: photo.description || '',
-        title: photo.title || '',
-        exif: photo.exif || null,
-        isSynced: true
-      };
+        request.onsuccess = (event) => {
+          const id = (event.target as IDBRequest).result as number;
+          console.log('✅ PhotoIndexedDbService.saveNew: Фота захавана з id =', id);
+          resolve(id);
+        };
 
-      const request = store.put(photoData); // `add`, не `put`
+        request.onerror = () => {
+          console.error('❌ PhotoIndexedDbService.saveNew: Памылка пры захаванні:', request.error);
+          reject(request.error);
+        };
+      });
+    });
+  }
 
-      request.onsuccess = () => {
-        console.log('✅ PhotoIndexedDbService: Photo saved with server ID =', id);
-        resolve();
-      };
 
-      request.onerror = () => {
-        console.error('❌ PhotoIndexedDbService: Error saving photo with server ID:', request.error);
-        reject(request.error);
-      };
+  async savePhotoWithId(id: number | string, photoData: any): Promise<void> {
+    if (!photoData.file) {
+      return Promise.reject('❌ PhotoIndexedDbService: photoData.file is undefined');
+    }
+
+    const dataToStore = { ...photoData, id };
+
+    return this.performTransaction<void>('readwrite', (store) => {
+      return new Promise<void>((resolve, reject) => {
+        const request = store.put(dataToStore);
+
+        request.onsuccess = () => {
+          console.log('✅ PhotoIndexedDbService: Photo saved with server ID =', id);
+          resolve();
+        };
+
+        request.onerror = () => {
+          console.error('❌ PhotoIndexedDbService: Error saving photo with server ID:', request.error);
+          reject(request.error);
+        };
+      });
     });
   }
 
 
   async getAllPhotos(): Promise<Photo[]> {
+    return this.performTransaction<Photo[]>('readonly', (store) => {
+      return new Promise((resolve, reject) => {
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+          const rawPhotos = request.result as any[];
+
+          const filteredPhotos = rawPhotos.filter(p => !p.isDeleted);
+
+          const photosWithUrl = filteredPhotos.map(p => {
+            if (!(p.file instanceof File)) {
+              console.warn('⚠️ file is not a File instance!', p.file);
+            }
+
+            const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(p.file));
+            console.log('🖼️ Створаны url для photo.id =', p.id, url);
+
+            return {
+              ...p,
+              url: url,
+              isSynced: p.isSynced ?? false,
+              id: p.id
+            };
+          });
+
+          resolve(photosWithUrl as Photo[]);
+        };
+
+        request.onerror = () => {
+          console.error('❌ PhotoIndexedDbService: Error loading photos from IndexedDB:', request.error);
+          reject(request.error);
+        };
+      });
+    });
+  }
+
+
+  async getPhotoById(id: number | string): Promise<Photo | undefined> {
+    return this.performTransaction<Photo | undefined>('readonly', (store) => {
+      return new Promise((resolve, reject) => {
+        const request = store.get(id);
+
+        request.onsuccess = () => {
+          if (request.result) {
+            resolve(request.result as Photo);
+          } else {
+            resolve(undefined);
+          }
+        };
+
+        request.onerror = () => {
+          reject(request.error);
+        };
+      });
+    });
+  }
+
+
+  async getRawPhotoById(id: number | string): Promise<any | null> {
     await this.waitForDBReady();
 
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
-      const request = store.getAll();
+      const request = store.get(id);
 
       request.onsuccess = () => {
-        const rawPhotos = request.result as any[];
-
-        const filteredPhotos = rawPhotos.filter(p => !p.isDeleted); // 🔥 фільтруем
-
-        const photosWithUrl = filteredPhotos.map(p => {
-          if (!(p.file instanceof File)) {
-            console.warn('⚠️ file is not a File instance!', p.file);
-          }
-
-          const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(p.file));
-          console.log('🖼️ Створаны url для photo.id =', p.id, url);
-
-          return {
-            ...p,
-            url: url,
-            isSynced: p.isSynced ?? false,
-            id: p.id
-          };
-        });
-
-        resolve(photosWithUrl as Photo[]);
+        resolve(request.result || null);
       };
 
-
       request.onerror = () => {
-        console.error('❌ PhotoIndexedDbService: Error loading photos from IndexedDB:', request.error);
+        console.error('❌ PhotoIndexedDbService: памылка пры чытанні photo:', request.error);
         reject(request.error);
       };
     });
   }
+
 
   async photoExists(id: number | string): Promise<boolean> {
     await this.waitForDBReady();
@@ -181,7 +216,6 @@ export class PhotoIndexedDbService {
       request.onerror = () => resolve(false);
     });
   }
-
 
 
   async getPhotosForSync(): Promise<PhotoToStore[]> {
@@ -202,18 +236,6 @@ export class PhotoIndexedDbService {
     });
   }
 
-  async updatePhoto(photo: any): Promise<void> {
-    await this.waitForDBReady();
-
-    return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.put(photo);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
 
   async extractExifData(file: File): Promise<any> {
     try {
@@ -229,61 +251,73 @@ export class PhotoIndexedDbService {
     }
   }
 
+
+  async updatePhoto(updatedPhoto: PhotoToUpdate): Promise<void> {
+    if (updatedPhoto.id === undefined) {
+      return Promise.reject('❌ PhotoIndexedDbService: Cannot update photo without id');
+    }
+
+    const id = updatedPhoto.id;
+
+    return this.performTransaction<void>('readwrite', (store) => {
+      const request = store.get(id);
+
+      return new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+          const existing = request.result;
+          if (!existing) {
+            reject(`❌ PhotoIndexedDbService: Photo with id=${updatedPhoto.id} not found`);
+            return;
+          }
+
+          const updated = {
+            ...existing,
+            ...updatedPhoto,
+          };
+
+          const putRequest = store.put(updated);
+
+          putRequest.onsuccess = () => {
+            console.log(`✅ PhotoIndexedDbService: Photo updated (id=${updatedPhoto.id})`);
+            resolve();
+          };
+
+          putRequest.onerror = () => reject(putRequest.error);
+        };
+
+        request.onerror = () => reject(request.error);
+      });
+    });
+  }
+
+
   async deletePhoto(id: number | string): Promise<void> {
+    console.log('🧹 PhotoIndexedDbService: deletePhoto: id =', id, typeof id);
+
     if (!this.db) {
       console.error('PhotoIndexedDbService: DB not initialized');
       return;
     }
 
-    return new Promise<void>((resolve, reject) => {
-      const tx = this.db!.transaction(this.storeName, 'readwrite');
-      const store = tx.objectStore(this.storeName);
+    if (id === undefined) {
+      return Promise.reject('❌ PhotoIndexedDbService.deletePhoto: id is undefined');
+    }
 
-      const request = store.delete(id);
+    return this.performTransaction<void>('readwrite', (store) => {
+      return new Promise<void>((resolve, reject) => {
+        const request = store.delete(id);
 
-      request.onerror = () => {
-        console.error('❌ PhotoIndexedDbService: Памылка пры выдаленні фота з IndexedDB');
-        reject(request.error);
-      };
+        request.onerror = () => {
+          console.error('❌ PhotoIndexedDbService: Памылка пры выдаленні фота з IndexedDB');
+          reject(request.error);
+        };
 
-      tx.oncomplete = () => {
-        console.log(`🗑️ PhotoIndexedDbService: Фота з id=${id} выдалена з IndexedDB`);
-        resolve();
-      };
+        resolve();  // тут resolve выклікаецца пры delete без wait, таму мы таксама пакуем у tx.oncomplete ніжэй
 
-      tx.onerror = () => {
-        console.error('❌ PhotoIndexedDbService: Памылка транзакцыі пры выдаленні');
-        reject(tx.error);
-      };
+      });
     });
   }
 
-  async markPhotoDeleted(id: number | string): Promise<void> {
-    await this.waitForDBReady();
-
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(this.storeName, 'readwrite');
-      const store = tx.objectStore(this.storeName);
-
-      const getRequest = store.get(id);
-
-      getRequest.onsuccess = () => {
-        const photo = getRequest.result;
-        if (!photo) {
-          reject(`PhotoIndexedDbService: Photo with id=${id} not found`);
-          return;
-        }
-        photo.isDeleted = true;
-        photo.isSynced = false;
-
-        const putRequest = store.put(photo);
-
-        putRequest.onsuccess = () => resolve();
-        putRequest.onerror = () => reject(putRequest.error);
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
-  }
 
   async clearAllPhotos(): Promise<void> {
     await this.waitForDBReady();

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Photo } from '../../../../models/photo';
+import { Photo } from '../../../../models/photo-interfaces';
 
 @Component({
   selector: 'app-selected-photo',

@@ -1,0 +1,20 @@
+<div class="dialog-overlay">
+  <div class="dialog">
+    <h2>📝 Рэдагаванне фота</h2>
+
+    <label>
+      Title:
+      <input [(ngModel)]="title" />
+    </label>
+
+    <label>
+      Description:
+      <textarea [(ngModel)]="description"></textarea>
+    </label>
+
+    <div class="buttons">
+      <button (click)="onCancel()">✖️ Адмяніць</button>
+      <button (click)="onSave()">💾 Захаваць</button>
+    </div>
+  </div>
+</div>

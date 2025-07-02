@@ -8,14 +8,14 @@ import { Component, Output, EventEmitter, ViewChild, ElementRef } from '@angular
   styleUrl: './photo-actions.component.scss'
 })
 export class PhotoActionsComponent {
-  @Output() editDescription = new EventEmitter<void>();
+  @Output() editDetails = new EventEmitter<void>();
   @Output() uploadPhoto = new EventEmitter<File>();
   @Output() deletePhoto = new EventEmitter<void>();
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   onEditClick() {
-    this.editDescription.emit();
+    this.editDetails.emit();
   }
 
   onUploadClick() {

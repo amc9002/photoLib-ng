@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ConfirmDialogService } from './confirm-dialog.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 
 @Component({

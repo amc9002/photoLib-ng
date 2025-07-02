@@ -1,27 +1,28 @@
-import { Observable, Subject } from 'rxjs';
 import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmDialogService {
   isVisible = false;
   message = '';
-  onConfirm: () => void = () => {};
-  onCancel: () => void = () => {};
 
-  show(message: string, onConfirm: () => void, onCancel: () => void) {
+  private resolve!: (value: boolean) => void;
+
+  show(message: string): Promise<boolean> {
     this.message = message;
-    this.onConfirm = onConfirm;
-    this.onCancel = onCancel;
     this.isVisible = true;
+
+    return new Promise<boolean>((resolve) => {
+      this.resolve = resolve;
+    });
   }
 
   confirm() {
-    this.onConfirm();
     this.isVisible = false;
+    this.resolve(true);
   }
 
   cancel() {
-    this.onCancel();
     this.isVisible = false;
+    this.resolve(false);
   }
 }

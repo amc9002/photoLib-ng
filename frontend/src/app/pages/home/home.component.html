@@ -17,9 +17,9 @@
     <app-photo-sidebar 
       [photo]="selectedPhoto" 
       (exifExtracted)="onExifExtracted($event)"
-      (deletePhoto)="onDeletePhoto()"
+      (requestDelete)="onDeletePhoto()"
       (uploadPhoto)="onUploadPhoto($event)"
-      (editDescription)="onEditDescription()"
+      (requestEdit)="onEditPhoto($event)"
       >
   </app-photo-sidebar>
   </div>
