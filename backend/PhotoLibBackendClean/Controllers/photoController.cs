@@ -56,11 +56,34 @@ namespace PhotoLibBackendClean.Controllers
             return File(photo.ImageData, "image/jpeg");
         }
 
+        [HttpGet("bygallery/{galleryId}")]
+        public async Task<ActionResult<IEnumerable<PhotoThumbnailDto>>> GetPhotosByGallery(int galleryId)
+        {
+            var thumbnails = await _context.Photos
+                .Where(p => p.GalleryId == galleryId && p.ImageData != null)
+                .Select(p => new PhotoThumbnailDto
+                {
+                    Id = p.Id,
+                    ThumbnailBase64 = $"data:image/jpeg;base64,{Convert.ToBase64String(p.ImageData!)}",
+                    GalleryId = p.GalleryId
+                })
+                .ToListAsync();
+
+            return Ok(thumbnails);
+        }
+
         [HttpPost]
         public async Task<ActionResult<PhotoFullDto>> PostPhoto([FromForm] PhotoUploadDto dto)
         {
+            Console.WriteLine($"PostPhoto called with GalleryId = {dto.GalleryId}");
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var galleryExists = await _context.Galleries.AnyAsync(g => g.Id == dto.GalleryId);
+            if (!galleryExists)
+                return BadRequest($"Gallery with Id={dto.GalleryId} does not exist.");
+
             byte[] imageData;
             using (var memoryStream = new MemoryStream())
             {
@@ -76,7 +99,8 @@ namespace PhotoLibBackendClean.Controllers
                 Title = string.IsNullOrWhiteSpace(dto.Title) ? "[Без назвы]" : dto.Title,
                 Description = dto.Description,
                 ExifData = dto.ExifData,
-                ImageData = imageData
+                ImageData = imageData,
+                GalleryId = dto.GalleryId
             };
 
             _context.Photos.Add(photo);

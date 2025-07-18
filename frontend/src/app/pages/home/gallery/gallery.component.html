@@ -1,17 +1,16 @@
 <div class="gallery">
   <div class="photo-wrapper" 
-  *ngFor="let photo of photos"
-  (click)="selectPhoto(photo)"
-  >
+       *ngFor="let photo of photos"
+       (click)="selectPhoto(photo)">
     <img 
       class="thumbnail" 
       [src]="photo.url" 
       [alt]="photo.description"
-      [class.selected]="photo.id === selectedPhotoId" 
+      [class.selected]="isSelected(photo)"
       [class.mock-photo]="photo.source === 'mock'"
     />
     <div class="unsynced-badge" *ngIf="!photo.isSynced">
-     ⏳
+      ⏳
     </div>
   </div>
 </div>

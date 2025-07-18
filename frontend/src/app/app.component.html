@@ -6,10 +6,10 @@
     (photoSelected)="onPhotoSelected($event)"
     (exifExtracted)="exifData = $event"
     (editPhoto)="onEdit()"
-    (uploadPhoto)="onUploadPhoto($event)"
+    (uploadPhoto)="onUploadPhoto($event.file, $event.galleryId)"
     (deletePhoto)="onDeletePhoto()" >
 </app-home>
-<app-confirm-dialog></app-confirm-dialog>
+
 <app-edit-photo-dialog
     *ngIf="editDialogVisible"
     [photo]="selectedPhoto"

@@ -1,8 +1,24 @@
 <div class="toolbar">
-  <label for="mode-select">Рэжым:</label>
+  <div class="menu">
+    <div class="menu-item">File</div>
+    <div class="menu-item">View</div>
+
+    <div class="menu-item">
+      Galleries
+      <div class="submenu">
+        <app-gallery-menu (gallerySelected)="onGallerySelected($event)"></app-gallery-menu>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <label for="mode-select">Mode:</label>
   <select id="mode-select" [(ngModel)]="selectedMode" (change)="onModeChange(selectedMode)">
-    <option [value]="AppMode.Work">Працоўны</option>
-    <option [value]="AppMode.Demo">Дэманстрацыя</option>
+    <option value="work">Work</option>
+    <option value="demo">Demo</option>
   </select>
-  <button (click)="onSyncClick()">🔄 Сінхранізаваць</button>
+  <span *ngIf="!isOnline" class="offline-warning">⚠️ Аўтаномны рэжым</span>
+  <button (click)="onSyncClick()">🔄 Sync</button>
 </div>
+

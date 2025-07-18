@@ -1,0 +1,31 @@
+.gallery-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  select {
+    width: 100%;
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  .tools {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      cursor: pointer;
+      padding: 0.4rem;
+      &:hover {
+        background-color: #efefef;
+      }
+    }
+  }
+
+  hr {
+    margin: 0.5rem 0;
+    border: none;
+    border-top: 1px solid #ccc;
+  }
+}

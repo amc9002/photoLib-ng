@@ -1,9 +1,56 @@
 .toolbar {
-  padding: 0.3rem 1rem; /* паменшылі верхні/ніжні адступ */
-  font-size: 0.9rem; /* меншы шрыфт */
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #ccc;
   display: flex;
   align-items: center;
-  height: 40px; 
+  background-color: #f8f8f8;
+  padding: 0.3rem 1rem;
+  border-bottom: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.menu {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+}
+
+.menu-item {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: 100%; /* пад галоўным пунктам */
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  min-width: 150px;
+  z-index: 10;
+  padding: 0.5rem 0;
+}
+
+/* Паказваем падменю пры навядзенні на пункт меню */
+.menu-item:hover .submenu {
+  display: block;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+select, button {
+  margin-left: 1rem;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.offline-warning {
+  margin: 0 1rem;
+  color: #ffc107;
+  font-weight: bold;
 }

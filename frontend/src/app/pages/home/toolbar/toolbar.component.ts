@@ -1,33 +1,74 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { AppModeService } from '../../../services/app-mode.service';
-import { AppMode } from '../../../shared/app-mode.enum';
+
+import { ConnectionService } from '../../../services/connection.service';
+import { AppMode, AppModeService } from '../../../services/utilServices/app-mode.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { GalleryMenuComponent } from './gallery-menu/gallery-menu.component';
+import { Gallery } from '../../../models/gallery-interfaces';
+import { GalleryManagerService } from '../../../services/galleryServices/gallery-manager.service';
+import { GalleryStateService } from '../../../services/stateServices/gallery-state.service';
+import { AppInitializerService } from '../../../services/init/app-initializer.service';
 
 @Component({
   selector: 'app-toolbar',
   standalone: true,
   imports: [
     FormsModule,
+    GalleryMenuComponent,
     CommonModule,
   ],
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss']
 })
 export class ToolbarComponent {
-  AppMode = AppMode; // каб выкарыстоўваць у шаблоне
-  selectedMode: AppMode;
+  selectedMode: string;
 
   @Output() syncRequested = new EventEmitter<void>();
+  @Output() gallerySelected = new EventEmitter<Gallery>();
 
-  constructor(private appModeService: AppModeService) {
-    this.selectedMode = this.appModeService.getMode();
+  constructor(
+    private connectionService: ConnectionService,
+    private appInitializerService: AppInitializerService,
+    private appModeService: AppModeService,
+    private galleryService: GalleryManagerService,
+    private galleryState: GalleryStateService,
+  ) {
+    const mode = this.appModeService.getMode();
+    this.selectedMode = (mode === AppMode.Demo) ? 'demo' : 'work';
   }
 
-  onModeChange(mode: AppMode) {
-    this.selectedMode = mode;
-    this.appModeService.setMode(mode);
-    console.log("🔧 Toolbar: AppMode switched to:", mode);
+  isOnline = true;
+  isGalleryMenuOpen = false;
+
+  ngOnInit(): void {
+    this.connectionService.online$.subscribe(online => {
+      this.isOnline = online;
+    });
+  }
+
+  toggleGalleryMenu() {
+    this.isGalleryMenuOpen = !this.isGalleryMenuOpen;
+  }
+
+  onGallerySelected(gallerySelected: Gallery) {
+    console.log("ToolbarComponent: 🖼️ Gallery selected in Toolbar:", gallerySelected.name);
+    this.galleryService.setSelectedGalleryId(gallerySelected.id);
+    this.galleryState.setSelectedGallery(gallerySelected);
+
+    console.log("📤 ToolbarComponent: emitting to HomeComponent...");
+    this.gallerySelected.emit(gallerySelected);
+  }
+
+  async onModeChange(mode: string) {
+    this.selectedMode = mode as AppMode;
+
+    if (mode === 'work') {
+      await this.appInitializerService.initializeApp();
+    } else if (mode === 'demo') {
+      this.appModeService.setMode(AppMode.Demo);
+      console.log('🔧 Toolbar: пераход у Demo');
+    }
   }
 
   onSyncClick() {

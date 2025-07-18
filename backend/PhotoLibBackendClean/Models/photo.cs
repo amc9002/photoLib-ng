@@ -14,5 +14,8 @@ namespace PhotoLibBackendClean.Models
         public string? ExifData { get; set; }
         [MaxLength(500)]
         public string? Url { get; set; }
+        [Required]
+        public required int GalleryId { get; set; }
+        public Gallery? Gallery { get; set; }
     }
 }

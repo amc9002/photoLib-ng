@@ -17,10 +17,41 @@ export class GalleryComponent {
   @Input() photos: PhotoWithUrl[] = [];
   @Output() photoSelected = new EventEmitter<PhotoWithUrl>();
 
-  selectedPhotoId?: number | string;
+  selectedPhotoId?: number;
+  selectedPhotoIds = new Set<number>();
+
 
   selectPhoto(photo: PhotoWithUrl) {
     this.selectedPhotoId = photo.id;
     this.photoSelected.emit(photo);
   }
+
+
+  private selectRange(toId: number) {
+    if (this.selectedPhotoIds.size === 0) {
+      this.selectedPhotoIds.add(toId);
+      return;
+    }
+    // Атрымаць індэкс апошняга выбранага
+    const photos = this.photos;
+    const lastSelectedId = Array.from(this.selectedPhotoIds).slice(-1)[0];
+    const startIndex = photos.findIndex(p => p.id === lastSelectedId);
+    const endIndex = photos.findIndex(p => p.id === toId);
+
+    if (startIndex < 0 || endIndex < 0) {
+      this.selectedPhotoIds.add(toId);
+      return;
+    }
+
+    const [from, to] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+    this.selectedPhotoIds.clear();
+    for (let i = from; i <= to; i++) {
+      this.selectedPhotoIds.add(photos[i].id);
+    }
+  }
+
+  isSelected(photo: PhotoWithUrl): boolean {
+    return this.selectedPhotoId === photo.id;
+  }
+
 }

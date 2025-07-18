@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using PhotoLibBackendClean.Infrastructure.Seed;
 using PhotoLibBackendClean.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,8 @@ builder.Services.AddCors(options =>
                       });
 });
 
+builder.Services.AddScoped<DatabaseSeederService>();
+builder.Services.AddScoped<DemoDataSeederService>();
 
 var app = builder.Build();
 
@@ -43,6 +46,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeederService>();
+    await seeder.SeedAsync();
+
+    if (app.Environment.IsDevelopment())
+    {
+        var demoSeeder = scope.ServiceProvider.GetRequiredService<DemoDataSeederService>();
+        await demoSeeder.SeedAsync();
+    }
+}
 
 app.Run();
 

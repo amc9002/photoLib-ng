@@ -1,0 +1,16 @@
+<div class="gallery-menu">
+    <label for="gallery-select">Выберыце галерэю:</label>
+    <select id="gallery-select" [(ngModel)]="selectedGalleryId" (change)="onGalleryChange()">
+        <option *ngFor="let gallery of galleries" [value]="gallery.id">{{ gallery.name }}</option>
+    </select>
+
+    <hr />
+
+    <ul class="tools">
+        <li (click)="addGallery()">➕ Дадаць галерэю</li>
+        <li (click)="renameGallery()">✏️ Змяніць назву</li>
+        <li (click)="generateGalleryName()">🔁 Генераваць назву</li>
+        <li (click)="toggleVisibility()">👁️ Пераключыць бачнасць</li>
+        <li (click)="protectWithPassword()">🔒 Абарона паролем</li>
+    </ul>
+</div>

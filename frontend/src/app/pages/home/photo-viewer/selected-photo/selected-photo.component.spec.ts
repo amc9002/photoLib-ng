@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SelectedPhotoComponent } from './selected-photo.component';
+import { Photo } from '../../../../models/photo-interfaces';
 
 describe('SelectedPhotoComponent', () => {
   let component: SelectedPhotoComponent;
@@ -28,7 +29,18 @@ describe('SelectedPhotoComponent', () => {
   });
 
   it('should accept photo input', () => {
-    const testPhoto = { url: 'test.jpg', description: 'Test photo' };
+    const testPhoto: Photo = {
+  id: 1,
+  url: 'some-url',
+  description: 'Test description',
+  isSynced: true,
+  isModified: false,
+  isDeleted: false,
+  fileName: 'test.jpg',
+  file: new File([''], 'test.jpg'), // калі патрэбна
+  galleryId: 1001
+};
+;
     component.photo = testPhoto;
     expect(component.photo).toEqual(testPhoto);
   });

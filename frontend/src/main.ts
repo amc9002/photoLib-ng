@@ -1,6 +1,21 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
+import { AppInitializerService } from './app/services/init/app-initializer.service';
+import { APP_INITIALIZER } from '@angular/core';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(),
+    provideAnimations(),
+
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (initService: AppInitializerService) => () => initService.initializeApp(),
+      deps: [AppInitializerService],
+      multi: true
+    }
+  ]
+});

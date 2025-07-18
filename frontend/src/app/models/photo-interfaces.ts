@@ -7,6 +7,7 @@ interface PhotoBase {
   title?: string;
   description?: string;
   exif?: any;
+  galleryId?: number;
   isSynced?: boolean;
   isModified?: boolean;
   isDeleted?: boolean;
@@ -14,7 +15,7 @@ interface PhotoBase {
 
 // 🔸 Фота, якое ўжо гатовае для UI (мае url, id, fileName і г.д.)
 export interface Photo extends PhotoBase {
-  id: number | string;
+  id: number;
   file?: File;
   url: string | SafeUrl;
   source?: 'mock' | 'user' | 'server';
@@ -26,7 +27,7 @@ export interface Photo extends PhotoBase {
 
 // 🔸 Для IndexedDB: палягчанае фота, якое яшчэ не загружана/няма URL
 export interface PhotoToStore extends PhotoBase {
-  id?: number | string;
+  id?: number;
   file?: File;
   url?: string | SafeUrl;
   type?: string;
@@ -35,7 +36,7 @@ export interface PhotoToStore extends PhotoBase {
 
 // 🔸 Для абнаўлення: толькі частка палёў абавязковая
 export interface PhotoToUpdate extends Partial<Omit<Photo, 'id'>> {
-  id: number | string;
+  id: number
 }
 
 // 🔸 Калі трэба гарантавана мець url (UI)

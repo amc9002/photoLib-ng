@@ -1,20 +1,44 @@
 .layout {
   display: grid;
-  grid-template-rows: auto auto 1fr;
-  grid-template-columns: 1.8fr 1fr 1fr;
   grid-template-areas:
     "toolbar toolbar toolbar"
     "gallery gallery gallery"
-    "photo   sidebar    map";
+    "photo sidebar map";
+  grid-template-columns: 1.8fr 1fr 1fr;
+  grid-template-rows: auto 100px 1fr;
   gap: 16px;
   height: 100vh;
   padding: 30px;
   box-sizing: border-box;
 }
 
-.photo, .sidebar, .map {
+
+.photo,
+.sidebar,
+.map {
   overflow-y: auto;
   max-height: 100%;
   box-sizing: border-box;
 }
 
+.toolbar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0;
+}
+
+.gallery-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  padding: 0 1rem;
+}
+
+.unsynced-badge {
+  display: inline-block;
+  margin-left: 6px;
+  color: orange;
+  font-weight: bold;
+  user-select: none;
+}

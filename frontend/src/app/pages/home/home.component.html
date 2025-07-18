@@ -1,12 +1,21 @@
 <div class="layout">
-  <div style="grid-area: toolbar;">
-    <app-toolbar (syncRequested)="onSyncClickedFromToolbar()"></app-toolbar>
+  <div style="grid-area: toolbar;" class="toolbar-container">
+    <app-toolbar 
+      (syncRequested)="onSyncClickedFromToolbar()" 
+      (gallerySelected)="onGallerySelected($event)">
+    </app-toolbar>
+    <div class="gallery-title">
+      📁 Gallery: {{ selectedGallery?.name || 'No gallery selected' }}
+      <span *ngIf="selectedGallery && !selectedGallery.isSynced" class="unsynced-badge" title="Gallery is not synced">
+        ⏳
+      </span>
   </div>
-  
+
+  </div>
+
   <div style="grid-area: gallery;">
-    <app-gallery 
-    [photos]="photos" 
-    (photoSelected)="onPhotoSelected($event)"></app-gallery>
+    <app-gallery [photos]="filteredPhotos" (photoSelected)="onPhotoSelected($event)">
+    </app-gallery>
   </div>
 
   <div style="grid-area: photo;" class="photo">
@@ -17,15 +26,13 @@
     <app-photo-sidebar 
       [photo]="selectedPhoto" 
       (exifExtracted)="onExifExtracted($event)"
-      (requestDelete)="onDeletePhoto()"
-      (uploadPhoto)="onUploadPhoto($event)"
-      (requestEdit)="onEditPhoto($event)"
-      >
-  </app-photo-sidebar>
+      (requestDelete)="onDeletePhoto()" 
+      (uploadPhoto)="onUploadPhoto($event)" 
+      (requestEdit)="onEditPhoto($event)">
+    </app-photo-sidebar>
   </div>
 
   <div style="grid-area: map;" class="map">
     <app-map [exif]="exifData"></app-map>
   </div>
-
 </div>

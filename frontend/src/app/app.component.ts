@@ -1,22 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HomeComponent } from './pages/home/home.component';
-import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
-import { ConfirmDialogService } from './services/confirm-dialog.service';
-import { Photo } from './models/photo-interfaces';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LoadingService } from './services/loading.service';
-import { Observable } from 'rxjs';
+import { HomeComponent } from './pages/home/home.component';
+import { ConfirmDialogService } from './services/utilServices/confirm-dialog.service';
+import { Photo } from './models/photo-interfaces';
+import { LoadingService } from './services/utilServices/loading.service';
+import { Observable, Subscription, Subject, takeUntil, tap } from 'rxjs';
 import { SpinnerComponent } from './shared/spinner/spinner.component';
-import { PhotoManagerService } from './services/photo-manager.service';
-import { PhotoUtilsService } from './services/photo-utils.service';
-import { PhotoIndexedDbService } from './services/photo-of-indexedDB.service';
-import { Subscription } from 'rxjs';
-import { AppModeService } from './services/app-mode.service';
+import { PhotoManagerService } from './services/photoServices/photo-manager.service';
 import { SafeUrl } from '@angular/platform-browser';
 import { EditPhotoDialogComponent } from './shared/edit-photo-dialog/edit-photo-dialog.component';
-import { MockPhotoService } from './services/mock-photo.service';
-import { AppMode } from './shared/app-mode.enum';
-import { PhotoStateService } from './services/photo-state.service';
+import { PhotoStateService } from './services/stateServices/photo-state.service';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ManagerService } from './services/manager.service';
+import { Gallery } from './models/gallery-interfaces';
+import { LoggerService } from './services/logger.service';
 
 @Component({
   selector: 'app-root',
@@ -24,152 +21,156 @@ import { PhotoStateService } from './services/photo-state.service';
   imports: [
     HomeComponent,
     SpinnerComponent,
-    ConfirmDialogComponent,
     EditPhotoDialogComponent,
+    MatDialogModule,
     CommonModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnDestroy {
   title = 'photolib-ng';
   loading$: Observable<boolean>;
   photos$!: Observable<Photo[]>;
+  private destroy$ = new Subject<void>();
 
   private subscriptions = new Subscription();
 
   photos: (Photo & { url: SafeUrl })[] = [];
-  // photosWithUrl: PhotoWithUrl[] = [];
+
   exifData: any = null;
 
   selectedPhoto: Photo | null = null;
 
   constructor(
+    private logger: LoggerService,
     private loadingService: LoadingService,
     private confirmDialogService: ConfirmDialogService,
+    private managerService: ManagerService,
     private photoManagerService: PhotoManagerService,
-    private appModeService: AppModeService,
-    private photoUtils: PhotoUtilsService,
-    private indexedDbService: PhotoIndexedDbService,
-    private mockPhotoService: MockPhotoService,
-    private state: PhotoStateService
+    private state: PhotoStateService,
+
   ) {
     this.loading$ = this.loadingService.loading$;
-    this.state.photos$.subscribe(p => {
-      this.photos = p ?? [];
-    });
+
+    this.managerService.getPhotosForSelectedGallery()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(p => {
+        console.log('📥 AppComponent (raw subscribe): photos from managerService:', p);
+        this.photos = p ?? [];
+      });
+
+    // this.photos$ = this.managerService.getPhotosForSelectedGallery().pipe(
+    //   tap(p => {
+    //     this.logger.log('--s', '📥 AppComponent: photos from managerService:', p);
+    //     this.photos = p ?? [];
+    //   }),
+    //   takeUntil(this.destroy$)
+    // );
+
+
+    (window as any).state = this.state;
+  }
+
+
+
+  selectedGallery: Gallery | null = null;
+
+  onGallerySelected(gallery: Gallery) {
+    this.logger.log('--h', 'AppComponent: Галерэя выбрана:', gallery);
+    this.selectedGallery = gallery;
+    this.managerService.selectGallery(gallery);
   }
 
   onPhotoSelected(photo: Photo) {
-    console.log("📸 Selected photo =", photo);
-    console.log("📦 file =", photo.file);
+    this.logger.log('--h', "📸 Selected photo =", photo);
+    this.logger.log('--h', "📦 file =", photo.file);
     this.selectedPhoto = photo;
   }
 
-  private async loadPhotosDependingOnMode() {
-    const mode = this.appModeService.getMode();
-
-    if (mode === AppMode.Demo) {
-      console.log('AppComponent: Loading mock photos');
-      const mockPhotos = this.mockPhotoService.getMockPhotos();
-      const photosWithUrls = this.photoUtils.addUrlToPhotos(mockPhotos, []);
-      this.state.setPhotos(photosWithUrls);
-    } else {
-      console.log('AppComponent: Loading real photos');
-      const realPhotos = await this.photoManagerService.getAllPhotos();
-      const photosWithUrls = this.photoUtils.addUrlToPhotos(realPhotos, []);
-      this.state.setPhotos(photosWithUrls);
-    }
-  }
-
-
-  async ngOnInit(): Promise<void> {
-    await this.indexedDbService.initDB(); // 🟢 1. Спачатку — адкрыць IndexedDB
-
-    // 2. Загружаем фоткі з IndexedDB у state (PhotoStateService праз PhotoManagerService)
-    const photosFromIndexedDB = await this.photoManagerService.getAllPhotos();
-    this.state.setPhotos(photosFromIndexedDB); // усталёўваем у BehaviorSubject у PhotoService або State
-
-    // 3. Сінхранізуем несінхранізаваныя фоткі з серверам (upload/download)
-    await this.photoManagerService.syncUnsyncedPhotosOnStartup();
-
-    // 4. Пасля сінхранізацыі — абнавіць state з актуальнымі фоткамі
-    const photosAfterSync = await this.photoManagerService.getAllPhotos();
-    this.state.setPhotos(photosAfterSync);
-
-    // 5. Падпісацца на змены рэжыму прыкладання (напрыклад, Demo/Real)
-    const modeSubscription = this.appModeService.mode$.subscribe(mode => {
-      console.log('AppComponent: Рэжым прыкладання змяніўся:', mode);
-      this.loadPhotosDependingOnMode(); // метад, які загружае фоткі ў залежнасці ад рэжыму
-    });
-    this.subscriptions.add(modeSubscription);
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.subscriptions.unsubscribe(); // калі ты яго выкарыстоўваў
   }
 
   async onSyncRequested() {
-    console.log("📡 AppComponent: Сінхранізацыя запрошана з toolbar");
-    await this.photoManagerService.syncWithServer({});
+    this.logger.log('--h', "📡 AppComponent: Сінхранізацыя запрошана з toolbar");
+    await this.managerService.sync();
   }
+
+
+
+  async addNewGallery() {
+    const newGallery = {
+      name: 'Новая галерэя',
+      description: 'Апісанне новай галерэі',
+    };
+    await this.managerService.addGallery(newGallery);
+    this.logger.log('--h', 'AppComponent: Галерэя дададзена');
+  }
+
+  async updateSelectedGallery() {
+    if (!this.selectedGallery) return;
+    await this.managerService.updateGallery(this.selectedGallery.id, {
+      name: 'Абноўленая назва',
+    });
+    this.logger.log('--h', 'AppComponent: Галерэя абноўлена');
+  }
+
+  async deleteSelectedGallery() {
+    if (!this.selectedGallery) return;
+    await this.managerService.deleteGallery(this.selectedGallery.id);
+    this.selectedGallery = null;
+    this.logger.log('--h', 'AppComponent: Галерэя выдалена');
+  }
+
+  async loadGalleries() {
+    const galleries = await this.managerService.getGalleries();
+    this.logger.log('--h', 'AppComponent: Загружаныя галерэі:', galleries);
+  }
+
+
 
 
   editDialogVisible = false;
 
   onEdit() {
-    console.log("AppComponent: Edit Edit requested");
+    this.logger.log('--h', "AppComponent: Edit Edit requested");
     this.editDialogVisible = true;
   }
 
   onCancelEdit() {
-    console.log("AppComponent: Edit cancelled");
+    this.logger.log('--h', "AppComponent: Edit cancelled");
     this.editDialogVisible = false;
   }
 
   async onSaveEdit(data: { title: string, description: string }) {
-    const selectedPhoto = this.selectedPhoto;
-    if (!selectedPhoto || selectedPhoto.id === undefined) {
-      console.error('Немагчыма абнавіць фота без id');
-      return;
-    }
-    console.log("AppComponent: Saving edited data", data);
-    await this.photoManagerService.updatePhoto(selectedPhoto.id, data.title, data.description);
-
-    const updatedPhotos = await this.photoManagerService.getAllPhotos();
-    this.state.setPhotos(updatedPhotos);
-    const updatedSelected = updatedPhotos.find(p => p.id === selectedPhoto.id);
-    if (updatedSelected) {
-      this.selectedPhoto = updatedSelected;
-    }
-
+    if (!this.selectedPhoto) return;
+    await this.managerService.updatePhoto(this.selectedPhoto.id!, data.title, data.description);
     this.editDialogVisible = false;
   }
 
-
-  async onUploadPhoto(file: File) {
-    console.log("AppComponent: Upload requested");
-    await this.photoManagerService.addNewPhotoFromFile(file);
+  async onUploadPhoto(file: File, galleryId: number) {
+    this.logger.log('--h', "AppComponent: Upload requested", { file, galleryId });
+    if (!galleryId) {
+      this.logger.warn('--s', "Gallery ID is empty or invalid. Please select a gallery before uploading.");
+      return;
+    }
+    await this.managerService.addPhoto(file, galleryId);
   }
-
 
   async onDeletePhoto() {
-    console.log("AppComponent: Deleting of photo", this.selectedPhoto);
     if (!this.selectedPhoto) return;
-
-    const confirmed = await this.confirmDialogService.show('Are you sure you want to delete this photo?');
-
+    const confirmed = await this.confirmDialogService.show('Are you sure?');
     if (confirmed) {
-      await this.photoManagerService.deletePhoto(this.selectedPhoto!);
+      await this.managerService.deletePhoto(this.selectedPhoto);
       this.selectedPhoto = null;
-    } else {
-      console.log("AppComponent: Выдаленьне адменена");
     }
   }
-
 
   async clearPhotosStorage() {
     await this.photoManagerService.clearLocalStorage();
     this.state.setPhotos([]);
-    console.log('🧹 AppComponent: Photos cleared from local IndexedDB and memory');
+    this.logger.log('--h', '🧹 AppComponent: Photos cleared from local IndexedDB and memory');
   }
 }
